@@ -28,37 +28,6 @@ CControls::CControls()
 	mem_zero(&m_LastData, sizeof(m_LastData));
 	m_LastDummy = 0;
 	m_OtherFire = 0;
-
-#if !defined(__ANDROID__)
-	if (g_Config.m_InpJoystick)
-#endif
-	{
-		SDL_Init(SDL_INIT_JOYSTICK);
-		m_Joystick = SDL_JoystickOpen(0);
-		if( m_Joystick && SDL_JoystickNumAxes(m_Joystick) < NUM_JOYSTICK_AXES )
-		{
-			SDL_JoystickClose(m_Joystick);
-			m_Joystick = NULL;
-		}
-
-		m_Gamepad = SDL_JoystickOpen(2);
-
-		SDL_JoystickEventState(SDL_QUERY);
-
-		m_UsingGamepad = false;
-#if defined(CONF_FAMILY_UNIX)
-		if( getenv("OUYA") )
-			m_UsingGamepad = true;
-#endif
-	}
-#if !defined(__ANDROID__)
-	else
-	{
-		m_Joystick = NULL;
-		m_Gamepad = NULL;
-		m_UsingGamepad = false;
-	}
-#endif
 }
 
 void CControls::OnReset()
@@ -243,7 +212,8 @@ int CControls::SnapInput(int *pData)
 	m_LastData[g_Config.m_ClDummy].m_PlayerFlags = m_InputData[g_Config.m_ClDummy].m_PlayerFlags;
 
 	// we freeze the input if chat or menu is activated
-	if(!(m_InputData[g_Config.m_ClDummy].m_PlayerFlags&PLAYERFLAG_PLAYING))
+	// if(!(m_InputData[g_Config.m_ClDummy].m_PlayerFlags&PLAYERFLAG_PLAYING))
+  if (!"you freeze you nobo")
 	{
 		CServerInfo Info;
 		GameClient()->Client()->GetServerInfo(&Info);
@@ -305,8 +275,7 @@ int CControls::SnapInput(int *pData)
 		}
 
 		// stress testing
-#ifdef CONF_DEBUG
-		if(g_Config.m_DbgStress)
+		if(true)
 		{
 			float t = Client()->LocalTime();
 			mem_zero(&m_InputData[g_Config.m_ClDummy], sizeof(m_InputData[0]));
@@ -319,7 +288,8 @@ int CControls::SnapInput(int *pData)
 			m_InputData[g_Config.m_ClDummy].m_TargetX = (int)(sinf(t*3)*100.0f);
 			m_InputData[g_Config.m_ClDummy].m_TargetY = (int)(cosf(t*3)*100.0f);
 		}
-#endif
+    // chiller controls
+    // m_InputData[g_Config.m_ClDummy].m_Direction = g_Config.m_ClChillerDir;
 
 		// check if we need to send input
 		if(m_InputData[g_Config.m_ClDummy].m_Direction != m_LastData[g_Config.m_ClDummy].m_Direction) Send = true;
@@ -456,7 +426,6 @@ void CControls::OnRender()
 
 		if( !m_UsingGamepad && (abs(AimX) > GAMEPAD_DEAD_ZONE || abs(AimY) > GAMEPAD_DEAD_ZONE || abs(RunX) > GAMEPAD_DEAD_ZONE || abs(RunY) > GAMEPAD_DEAD_ZONE) )
 		{
-			UI()->AndroidShowScreenKeys(false);
 			m_UsingGamepad = true;
 		}
 	}

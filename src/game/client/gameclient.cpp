@@ -6,12 +6,9 @@
 #include <engine/editor.h>
 #include <engine/engine.h>
 #include <engine/friends.h>
-#include <engine/graphics.h>
-#include <engine/textrender.h>
 #include <engine/demo.h>
 #include <engine/map.h>
 #include <engine/storage.h>
-#include <engine/sound.h>
 #include <engine/serverbrowser.h>
 #include <engine/updater.h>
 #include <engine/shared/demo.h>
@@ -27,7 +24,6 @@
 #include <game/localization.h>
 #include <game/version.h>
 #include "race.h"
-#include "render.h"
 
 #include "gameclient.h"
 
@@ -38,7 +34,6 @@
 #include "components/chat.h"
 #include "components/console.h"
 #include "components/controls.h"
-#include "components/countryflags.h"
 #include "components/damageind.h"
 #include "components/debughud.h"
 #include "components/effects.h"
@@ -49,7 +44,6 @@
 #include "components/killmessages.h"
 #include "components/mapimages.h"
 #include "components/maplayers.h"
-#include "components/mapsounds.h"
 #include "components/menus.h"
 #include "components/motd.h"
 #include "components/particles.h"
@@ -57,7 +51,6 @@
 #include "components/nameplates.h"
 #include "components/scoreboard.h"
 #include "components/skins.h"
-#include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/statboard.h"
 #include "components/voting.h"
@@ -79,7 +72,6 @@ static CBinds gs_Binds;
 static CParticles gs_Particles;
 static CMenus gs_Menus;
 static CSkins gs_Skins;
-static CCountryFlags gs_CountryFlags;
 static CFlow gs_Flow;
 static CHud gs_Hud;
 static CDebugHud gs_DebugHud;
@@ -87,7 +79,6 @@ static CControls gs_Controls;
 static CEffects gs_Effects;
 static CScoreboard gs_Scoreboard;
 static CStatboard gs_Statboard;
-static CSounds gs_Sounds;
 static CEmoticon gs_Emoticon;
 static CDamageInd gsDamageInd;
 static CVoting gs_Voting;
@@ -101,8 +92,6 @@ static CMapImages gs_MapImages;
 static CMapLayers gs_MapLayersBackGround(CMapLayers::TYPE_BACKGROUND);
 static CMapLayers gs_MapLayersForeGround(CMapLayers::TYPE_FOREGROUND);
 static CBackground gs_BackGround;
-
-static CMapSounds gs_MapSounds;
 
 static CRaceDemo gs_RaceDemo;
 static CGhost gs_Ghost;
@@ -118,8 +107,6 @@ void CGameClient::OnConsoleInit()
 {
 	m_pEngine = Kernel()->RequestInterface<IEngine>();
 	m_pClient = Kernel()->RequestInterface<IClient>();
-	m_pTextRender = Kernel()->RequestInterface<ITextRender>();
-	m_pSound = Kernel()->RequestInterface<ISound>();
 	m_pInput = Kernel()->RequestInterface<IInput>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
@@ -138,13 +125,11 @@ void CGameClient::OnConsoleInit()
 	m_pParticles = &::gs_Particles;
 	m_pMenus = &::gs_Menus;
 	m_pSkins = &::gs_Skins;
-	m_pCountryFlags = &::gs_CountryFlags;
 	m_pChat = &::gs_Chat;
 	m_pFlow = &::gs_Flow;
 	m_pCamera = &::gs_Camera;
 	m_pControls = &::gs_Controls;
 	m_pEffects = &::gs_Effects;
-	m_pSounds = &::gs_Sounds;
 	m_pMotd = &::gs_Motd;
 	m_pDamageind = &::gsDamageInd;
 	m_pMapimages = &::gs_MapImages;
@@ -156,7 +141,6 @@ void CGameClient::OnConsoleInit()
 	m_pMapLayersForeGround = &::gs_MapLayersForeGround;
 	m_pBackGround = &::gs_BackGround;
 
-	m_pMapSounds = &::gs_MapSounds;
 	m_pPlayers = &::gs_Players;
 
 	m_pRaceDemo = &::gs_RaceDemo;
@@ -166,18 +150,15 @@ void CGameClient::OnConsoleInit()
 
 	// make a list of all the systems, make sure to add them in the correct render order
 	m_All.Add(m_pSkins);
-	m_All.Add(m_pCountryFlags);
 	m_All.Add(m_pMapimages);
 	m_All.Add(m_pEffects); // doesn't render anything, just updates effects
 	m_All.Add(m_pParticles);
 	m_All.Add(m_pBinds);
 	m_All.Add(m_pControls);
 	m_All.Add(m_pCamera);
-	m_All.Add(m_pSounds);
 	m_All.Add(m_pVoting);
 	m_All.Add(m_pParticles); // doesn't render anything, just updates all the particles
 	m_All.Add(m_pRaceDemo);
-	m_All.Add(m_pMapSounds);
 
 	m_All.Add(&gs_BackGround);	//render instead of gs_MapLayersBackGround when g_Config.m_ClOverlayEntities == 100
 	m_All.Add(&gs_MapLayersBackGround); // first to render
@@ -271,15 +252,6 @@ void CGameClient::OnConsoleInit()
 
 void CGameClient::OnInit()
 {
-	m_pGraphics = Kernel()->RequestInterface<IGraphics>();
-
-	m_pGraphics->AddWindowResizeListener(OnWindowResizeCB, this);
-
-	// propagate pointers
-	m_UI.SetGraphics(Graphics(), TextRender());
-	m_RenderTools.m_pGraphics = Graphics();
-	m_RenderTools.m_pUI = UI();
-
 	int64 Start = time_get();
 
 	// set the language
@@ -291,34 +263,17 @@ void CGameClient::OnInit()
 		Client()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
 	// load default font
-	static CFont *pDefaultFont = 0;
 	char aFilename[512];
 	const char *pFontFile = "fonts/DejaVuSansCJKName.ttf";
 	if(str_find(g_Config.m_ClLanguagefile, "chinese") != NULL || str_find(g_Config.m_ClLanguagefile, "japanese") != NULL ||
 		str_find(g_Config.m_ClLanguagefile, "korean") != NULL)
 		pFontFile = "fonts/DejavuWenQuanYiMicroHei.ttf";
-	IOHANDLE File = Storage()->OpenFile(pFontFile, IOFLAG_READ, IStorage::TYPE_ALL, aFilename, sizeof(aFilename));
-	if(File)
-	{
-		io_close(File);
-		pDefaultFont = TextRender()->LoadFont(aFilename);
-		TextRender()->SetDefaultFont(pDefaultFont);
-	}
-	if(!pDefaultFont)
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "gameclient", "failed to load font. filename='%s'", pFontFile);
 
 	// init all components
 	for(int i = m_All.m_Num-1; i >= 0; --i)
 		m_All.m_paComponents[i]->OnInit();
 
 	char aBuf[256];
-
-	// setup load amount// load textures
-	for(int i = 0; i < g_pData->m_NumImages; i++)
-	{
-		g_pData->m_aImages[i].m_Id = Graphics()->LoadTexture(g_pData->m_aImages[i].m_pFilename, IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
-		g_GameClient.m_pMenus->RenderLoading();
-	}
 
 #if defined(__ANDROID__)
 	m_pMapimages->OnMapLoad(); // Reload map textures on Android
@@ -460,8 +415,6 @@ void CGameClient::OnConnected()
 {
 	m_Layers.Init(Kernel());
 	m_Collision.Init(Layers());
-
-	RenderTools()->RenderTilemapGenerateSkip(Layers());
 
 	CRaceHelper::ms_aFlagIndex[0] = -1;
 	CRaceHelper::ms_aFlagIndex[1] = -1;
@@ -623,6 +576,28 @@ static void Evolve(CNetObj_Character *pCharacter, int Tick)
 
 void CGameClient::OnRender()
 {
+  char key = '0';
+  key = getchar();
+
+  if (key == 'a')
+  {
+    dbg_msg("control", "A PRESSED");
+    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 1 : -1;
+  }
+  else if (key == 'k')
+  {
+    SendKill(-1);
+    dbg_msg("control", "selfkilled");
+  }
+  else if (key == 'l')
+  {
+    m_pChat->SayChat("/list");
+  }
+  else
+  {
+    // dbg_msg("control", "KEYPRESSED %c", key);
+  }
+
 	// update the local character and spectate position
 	UpdatePositions();
 
@@ -824,13 +799,11 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 			pMsg->m_SoundID == SOUND_CTF_CAPTURE || pMsg->m_SoundID == SOUND_CTF_GRAB_EN ||
 			pMsg->m_SoundID == SOUND_CTF_GRAB_PL)
 		{
-			if(g_Config.m_SndGame)
-				g_GameClient.m_pSounds->Enqueue(CSounds::CHN_GLOBAL, pMsg->m_SoundID);
+			// pMsg->m_SoundID
 		}
 		else
 		{
-			if(g_Config.m_SndGame)
-				g_GameClient.m_pSounds->Play(CSounds::CHN_GLOBAL, pMsg->m_SoundID, 1.0f);
+			// pMsg->m_SoundID
 		}
 	}
 	else if(MsgId == NETMSGTYPE_SV_TEAMSSTATE)
@@ -917,8 +890,6 @@ void CGameClient::OnWindowResize()
 {
 	for(int i = 0; i < m_All.m_Num; i++)
 		m_All.m_paComponents[i]->OnWindowResize();
-
-	TextRender()->OnWindowResize();
 }
 
 void CGameClient::OnWindowResizeCB(void *pUser)
@@ -982,8 +953,6 @@ void CGameClient::ProcessEvents()
 		else if(Item.m_Type == NETEVENTTYPE_SOUNDWORLD)
 		{
 			CNetEvent_SoundWorld *ev = (CNetEvent_SoundWorld *)pData;
-			if(g_Config.m_SndGame && (ev->m_SoundID != SOUND_GUN_FIRE || g_Config.m_SndGun) && (ev->m_SoundID != SOUND_PLAYER_PAIN_LONG || g_Config.m_SndLongPain))
-				g_GameClient.m_pSounds->PlayAt(CSounds::CHN_WORLD, ev->m_SoundID, 1.0f, vec2(ev->m_X, ev->m_Y));
 		}
 	}
 }
@@ -1064,21 +1033,9 @@ void CGameClient::OnNewSnapshot()
 				if(m_aClients[ClientID].m_aSkinName[0] == 'x' || m_aClients[ClientID].m_aSkinName[1] == '_')
 					str_copy(m_aClients[ClientID].m_aSkinName, "default", 64);
 
-				m_aClients[ClientID].m_SkinInfo.m_ColorBody = m_pSkins->GetColorV4(m_aClients[ClientID].m_ColorBody);
-				m_aClients[ClientID].m_SkinInfo.m_ColorFeet = m_pSkins->GetColorV4(m_aClients[ClientID].m_ColorFeet);
-				m_aClients[ClientID].m_SkinInfo.m_Size = 64;
 
 				// find new skin
 				m_aClients[ClientID].m_SkinID = g_GameClient.m_pSkins->Find(m_aClients[ClientID].m_aSkinName);
-
-				if(m_aClients[ClientID].m_UseCustomColor)
-					m_aClients[ClientID].m_SkinInfo.m_Texture = g_GameClient.m_pSkins->Get(m_aClients[ClientID].m_SkinID)->m_ColorTexture;
-				else
-				{
-					m_aClients[ClientID].m_SkinInfo.m_Texture = g_GameClient.m_pSkins->Get(m_aClients[ClientID].m_SkinID)->m_OrgTexture;
-					m_aClients[ClientID].m_SkinInfo.m_ColorBody = vec4(1,1,1,1);
-					m_aClients[ClientID].m_SkinInfo.m_ColorFeet = vec4(1,1,1,1);
-				}
 
 				m_aClients[ClientID].UpdateRenderInfo();
 
@@ -1725,9 +1682,6 @@ void CGameClient::OnPredict()
 			{
 				vec2 Pos = World.m_apCharacters[m_Snap.m_LocalClientID]->m_Pos;
 				int Events = World.m_apCharacters[m_Snap.m_LocalClientID]->m_TriggeredEvents;
-				if(Events&COREEVENT_GROUND_JUMP)
-					if(g_Config.m_SndGame)
-						g_GameClient.m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_PLAYER_JUMP, 1.0f, Pos);
 
 				/*if(events&COREEVENT_AIR_JUMP)
 				{
@@ -1737,12 +1691,6 @@ void CGameClient::OnPredict()
 
 				//if(events&COREEVENT_HOOK_LAUNCH) snd_play_random(CHN_WORLD, SOUND_HOOK_LOOP, 1.0f, pos);
 				//if(events&COREEVENT_HOOK_ATTACH_PLAYER) snd_play_random(CHN_WORLD, SOUND_HOOK_ATTACH_PLAYER, 1.0f, pos);
-				if(Events&COREEVENT_HOOK_ATTACH_GROUND)
-					if(g_Config.m_SndGame)
-						g_GameClient.m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_ATTACH_GROUND, 1.0f, Pos);
-				if(Events&COREEVENT_HOOK_HIT_NOHOOK)
-					if(g_Config.m_SndGame)
-						g_GameClient.m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_NOATTACH, 1.0f, Pos);
 				//if(events&COREEVENT_HOOK_RETRACT) snd_play_random(CHN_WORLD, SOUND_PLAYER_JUMP, 1.0f, pos);
 			}
 		}
@@ -1823,24 +1771,7 @@ void CGameClient::CClientStats::Reset()
 
 void CGameClient::CClientData::UpdateRenderInfo()
 {
-	m_RenderInfo = m_SkinInfo;
 
-	// force team colors
-	if(g_GameClient.m_Snap.m_pGameInfoObj && g_GameClient.m_Snap.m_pGameInfoObj->m_GameFlags&GAMEFLAG_TEAMS)
-	{
-		m_RenderInfo.m_Texture = g_GameClient.m_pSkins->Get(m_SkinID)->m_ColorTexture;
-		const int TeamColors[2] = {65387, 10223467};
-		if(m_Team >= TEAM_RED && m_Team <= TEAM_BLUE)
-		{
-			m_RenderInfo.m_ColorBody = g_GameClient.m_pSkins->GetColorV4(TeamColors[m_Team]);
-			m_RenderInfo.m_ColorFeet = g_GameClient.m_pSkins->GetColorV4(TeamColors[m_Team]);
-		}
-		else
-		{
-			m_RenderInfo.m_ColorBody = g_GameClient.m_pSkins->GetColorV4(12895054);
-			m_RenderInfo.m_ColorFeet = g_GameClient.m_pSkins->GetColorV4(12895054);
-		}
-	}
 }
 
 void CGameClient::CClientData::Reset()
@@ -1855,9 +1786,6 @@ void CGameClient::CClientData::Reset()
 	m_EmoticonStart = -1;
 	m_Active = false;
 	m_ChatIgnore = false;
-	m_SkinInfo.m_Texture = g_GameClient.m_pSkins->Get(0)->m_ColorTexture;
-	m_SkinInfo.m_ColorBody = vec4(1,1,1,1);
-	m_SkinInfo.m_ColorFeet = vec4(1,1,1,1);
 	UpdateRenderInfo();
 }
 

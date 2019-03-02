@@ -13,7 +13,6 @@ class CSound : public IEngineSound
 	SDL_AudioDeviceID m_Device;
 
 public:
-	IEngineGraphics *m_pGraphics;
 	IStorage *m_pStorage;
 
 	virtual int Init();

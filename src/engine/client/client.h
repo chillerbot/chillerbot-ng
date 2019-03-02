@@ -30,7 +30,6 @@ public:
 	void ScaleMin();
 
 	void Add(float v, float r, float g, float b);
-	void Render(IGraphics *pGraphics, int Font, float x, float y, float w, float h, const char *pDescription);
 };
 
 
@@ -60,10 +59,7 @@ class CClient : public IClient, public CDemoPlayer::IListener
 {
 	// needed interfaces
 	IEngine *m_pEngine;
-	IEditor *m_pEditor;
 	IEngineInput *m_pInput;
-	IEngineGraphics *m_pGraphics;
-	IEngineSound *m_pSound;
 	IGameClient *m_pGameClient;
 	IEngineMap *m_pMap;
 	IConsole *m_pConsole;
@@ -124,7 +120,7 @@ class CClient : public IClient, public CDemoPlayer::IListener
 	int64 m_PingStartTime;
 
 	char m_aCurrentMap[256];
-	char m_aCurrentMapPath[CEditor::MAX_PATH_LENGTH];
+	char m_aCurrentMapPath[2048];
 
 	char m_aTimeoutCodes[2][32];
 	bool m_aTimeoutCodeSent[2];
@@ -216,9 +212,7 @@ class CClient : public IClient, public CDemoPlayer::IListener
 
 public:
 	IEngine *Engine() { return m_pEngine; }
-	IEngineGraphics *Graphics() { return m_pGraphics; }
 	IEngineInput *Input() { return m_pInput; }
-	IEngineSound *Sound() { return m_pSound; }
 	IGameClient *GameClient() { return m_pGameClient; }
 	IEngineMasterServer *MasterServer() { return m_pMasterServer; }
 	IStorage *Storage() { return m_pStorage; }
@@ -409,7 +403,7 @@ public:
 	virtual void DemoSliceEnd();
 	virtual void DemoSlice(const char *pDstPath, CLIENTFUNC_FILTER pfnFilter, void *pUser);
 
-	bool EditorHasUnsavedData() { return m_pEditor->HasUnsavedData(); }
+	bool EditorHasUnsavedData() { return false; }
 
 	virtual IFriends* Foes() {return &m_Foes; }
 };

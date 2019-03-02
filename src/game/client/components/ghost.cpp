@@ -1,7 +1,6 @@
 /* (c) Rajh, Redix and Sushi. */
 
 #include <engine/ghost.h>
-#include <engine/graphics.h>
 #include <engine/serverbrowser.h>
 #include <engine/storage.h>
 #include <engine/shared/config.h>
@@ -342,8 +341,8 @@ void CGhost::OnRender()
 
 		Player.m_AttackTick += Client()->GameTick() - GhostTick;
 
-		m_pClient->m_pPlayers->RenderHook(&Prev, &Player, &pGhost->m_RenderInfo , -2, vec2(), vec2(), IntraTick);
-		m_pClient->m_pPlayers->RenderPlayer(&Prev, &Player, &pGhost->m_RenderInfo, -2, vec2(), IntraTick);
+		m_pClient->m_pPlayers->RenderHook(&Prev, &Player , -2, vec2(), vec2(), IntraTick);
+		m_pClient->m_pPlayers->RenderPlayer(&Prev, &Player, -2, vec2(), IntraTick);
 	}
 }
 
@@ -351,26 +350,8 @@ void CGhost::InitRenderInfos(CGhostItem *pGhost)
 {
 	char aSkinName[64];
 	IntsToStr(&pGhost->m_Skin.m_Skin0, 6, aSkinName);
-	CTeeRenderInfo *pRenderInfo = &pGhost->m_RenderInfo;
 
 	int SkinId = m_pClient->m_pSkins->Find(aSkinName);
-
-	if(pGhost->m_Skin.m_UseCustomColor)
-	{
-		pRenderInfo->m_Texture = m_pClient->m_pSkins->Get(SkinId)->m_ColorTexture;
-		pRenderInfo->m_ColorBody = m_pClient->m_pSkins->GetColorV4(pGhost->m_Skin.m_ColorBody);
-		pRenderInfo->m_ColorFeet = m_pClient->m_pSkins->GetColorV4(pGhost->m_Skin.m_ColorFeet);
-	}
-	else
-	{
-		pRenderInfo->m_Texture = m_pClient->m_pSkins->Get(SkinId)->m_OrgTexture;
-		pRenderInfo->m_ColorBody = vec4(1, 1, 1, 1);
-		pRenderInfo->m_ColorFeet = vec4(1, 1, 1, 1);
-	}
-
-	pRenderInfo->m_ColorBody.a = 0.5f;
-	pRenderInfo->m_ColorFeet.a = 0.5f;
-	pRenderInfo->m_Size = 64;
 }
 
 void CGhost::StartRecord(int Tick)

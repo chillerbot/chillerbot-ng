@@ -4,7 +4,6 @@
 
 #include <base/system.h>
 #include <engine/shared/config.h>
-#include <engine/graphics.h>
 #include <engine/input.h>
 #include <engine/keys.h>
 
@@ -54,8 +53,6 @@ CInput::CInput()
 
 void CInput::Init()
 {
-	m_pGraphics = Kernel()->RequestInterface<IEngineGraphics>();
-
 	MouseModeRelative();
 }
 
@@ -84,14 +81,12 @@ void CInput::MouseModeAbsolute()
 {
 	m_InputGrabbed = 0;
 	SDL_SetRelativeMouseMode(SDL_FALSE);
-	Graphics()->SetWindowGrab(false);
 }
 
 void CInput::MouseModeRelative()
 {
 	m_InputGrabbed = 1;
 	SDL_SetRelativeMouseMode(SDL_TRUE);
-	Graphics()->SetWindowGrab(true);
 }
 
 int CInput::MouseDoubleClick()
@@ -288,11 +283,6 @@ int CInput::Update()
 					switch (Event.window.event)
 					{
 						case SDL_WINDOWEVENT_RESIZED:
-#if defined(SDL_VIDEO_DRIVER_X11)
-							Graphics()->Resize(Event.window.data1, Event.window.data2);
-#elif defined(__ANDROID__)
-							m_VideoRestartNeeded = 1;
-#endif
 							break;
 						case SDL_WINDOWEVENT_FOCUS_GAINED:
 							if(m_InputGrabbed)

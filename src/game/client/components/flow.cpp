@@ -1,6 +1,5 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#include <engine/graphics.h>
 #include <game/mapitems.h>
 #include <game/layers.h>
 #include "flow.h"
@@ -15,29 +14,7 @@ CFlow::CFlow()
 
 void CFlow::DbgRender()
 {
-	if(!m_pCells)
-		return;
 
-	IGraphics::CLineItem Array[1024];
-	int NumItems = 0;
-	Graphics()->TextureSet(-1);
-	Graphics()->LinesBegin();
-	for(int y = 0; y < m_Height; y++)
-		for(int x = 0; x < m_Width; x++)
-		{
-			vec2 Pos(x*m_Spacing, y*m_Spacing);
-			vec2 Vel = m_pCells[y*m_Width+x].m_Vel * 0.01f;
-			Array[NumItems++] = IGraphics::CLineItem(Pos.x, Pos.y, Pos.x+Vel.x, Pos.y+Vel.y);
-			if(NumItems == 1024)
-			{
-				Graphics()->LinesDraw(Array, 1024);
-				NumItems = 0;
-			}
-		}
-
-	if(NumItems)
-		Graphics()->LinesDraw(Array, NumItems);
-	Graphics()->LinesEnd();
 }
 
 void CFlow::Init()

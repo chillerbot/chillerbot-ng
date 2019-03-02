@@ -8,12 +8,10 @@ class CPlayers : public CComponent
 {
 	friend class CGhost;
 
-	CTeeRenderInfo m_aRenderInfo[MAX_CLIENTS];
-	void RenderHand(class CTeeRenderInfo *pInfo, vec2 CenterPos, vec2 Dir, float AngleOffset, vec2 PostRotOffset);
+	void RenderHand( vec2 CenterPos, vec2 Dir, float AngleOffset, vec2 PostRotOffset);
 	void RenderPlayer(
 		const CNetObj_Character *pPrevChar,
 		const CNetObj_Character *pPlayerChar,
-		const CTeeRenderInfo *pRenderInfo,
 		int ClientID,
 		const vec2 &Position,
 		float Intra = 0.f
@@ -25,7 +23,6 @@ class CPlayers : public CComponent
 	void RenderHook(
 		const CNetObj_Character *pPrevChar,
 		const CNetObj_Character *pPlayerChar,
-		const CTeeRenderInfo *pRenderInfo,
 		int ClientID,
 		const vec2 &Position,
 		const vec2 &PositionTo,

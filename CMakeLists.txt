@@ -159,6 +159,11 @@ if(NOT MSVC)
       -Wdeclaration-after-statement
     )
   endif()
+
+
+
+
+
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wextra)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-unused-parameter)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-missing-field-initializers)
@@ -299,6 +304,12 @@ else()
   set(WEBSOCKETS_LIBRARIES)
   set(WEBSOCKETS_INCLUDE_DIRS)
 endif()
+
+
+
+
+add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -lcurses)
+
 
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
@@ -593,7 +604,6 @@ set_glob(ENGINE_INTERFACE GLOB src/engine
   config.h
   console.h
   demo.h
-  editor.h
   engine.h
   friends.h
   ghost.h
@@ -606,9 +616,7 @@ set_glob(ENGINE_INTERFACE GLOB src/engine
   message.h
   server.h
   serverbrowser.h
-  sound.h
   storage.h
-  textrender.h
   updater.h
   uuid.h
 )
@@ -769,9 +777,6 @@ if(CLIENT)
     opengl_sl_program.h
     serverbrowser.cpp
     serverbrowser.h
-    sound.cpp
-    sound.h
-    text.cpp
     updater.cpp
     updater.h
   )
@@ -817,8 +822,6 @@ if(CLIENT)
     components/mapimages.h
     components/maplayers.cpp
     components/maplayers.h
-    components/mapsounds.cpp
-    components/mapsounds.h
     components/menus.cpp
     components/menus.h
     components/menus_browser.cpp
@@ -839,8 +842,6 @@ if(CLIENT)
     components/scoreboard.h
     components/skins.cpp
     components/skins.h
-    components/sounds.cpp
-    components/sounds.h
     components/spectator.cpp
     components/spectator.h
     components/statboard.cpp
@@ -853,23 +854,6 @@ if(CLIENT)
     lineinput.h
     race.cpp
     race.h
-    render.cpp
-    render.h
-    render_map.cpp
-    ui.cpp
-    ui.h
-  )
-  set_glob(GAME_EDITOR GLOB src/game/editor
-    auto_map.cpp
-    auto_map.h
-    editor.cpp
-    editor.h
-    io.cpp
-    layer_game.cpp
-    layer_quads.cpp
-    layer_sounds.cpp
-    layer_tiles.cpp
-    popups.cpp
   )
   set(GAME_GENERATED_CLIENT
     src/game/generated/client_data.cpp
@@ -899,6 +883,7 @@ if(CLIENT)
     # Add pthreads (on non-Windows) at the end, so that other libraries can depend
     # on it.
     ${CMAKE_THREAD_LIBS_INIT}
+    -lcurses
   )
 
   if(TARGET_OS STREQUAL "windows")

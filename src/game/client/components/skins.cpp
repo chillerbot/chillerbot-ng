@@ -5,7 +5,6 @@
 #include <base/system.h>
 #include <base/math.h>
 
-#include <engine/graphics.h>
 #include <engine/storage.h>
 #include <engine/shared/config.h>
 
@@ -30,120 +29,6 @@ static bool IsVanillaSkin(const char *pName)
 
 int CSkins::SkinScan(const char *pName, int IsDir, int DirType, void *pUser)
 {
-	CSkins *pSelf = (CSkins *)pUser;
-
-	if(IsDir || !str_endswith(pName, ".png"))
-		return 0;
-
-	char aNameWithoutPng[128];
-	str_copy(aNameWithoutPng, pName, sizeof(aNameWithoutPng));
-	aNameWithoutPng[str_length(aNameWithoutPng) - 4] = 0;
-
-	// Don't add duplicate skins (one from user's config directory, other from
-	// client itself)
-	for(int i = 0; i < pSelf->Num(); i++)
-	{
-		const char *pExName = pSelf->Get(i)->m_aName;
-		if(str_comp(pExName, aNameWithoutPng) == 0)
-			return 0;
-	}
-
-	char aBuf[512];
-	str_format(aBuf, sizeof(aBuf), "skins/%s", pName);
-	CImageInfo Info;
-	if(!pSelf->Graphics()->LoadPNG(&Info, aBuf, DirType))
-	{
-		str_format(aBuf, sizeof(aBuf), "failed to load skin from %s", pName);
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "game", aBuf);
-		return 0;
-	}
-
-	CSkin Skin;
-	Skin.m_IsVanilla = IsVanillaSkin(aNameWithoutPng);
-	Skin.m_OrgTexture = pSelf->Graphics()->LoadTextureRaw(Info.m_Width, Info.m_Height, Info.m_Format, Info.m_pData, Info.m_Format, 0);
-
-	int BodySize = 96; // body size
-	if (BodySize > Info.m_Height)
-		return 0;
-	unsigned char *d = (unsigned char *)Info.m_pData;
-	int Pitch = Info.m_Width*4;
-
-	// dig out blood color
-	{
-		int aColors[3] = {0};
-		for(int y = 0; y < BodySize; y++)
-			for(int x = 0; x < BodySize; x++)
-			{
-				if(d[y*Pitch+x*4+3] > 128)
-				{
-					aColors[0] += d[y*Pitch+x*4+0];
-					aColors[1] += d[y*Pitch+x*4+1];
-					aColors[2] += d[y*Pitch+x*4+2];
-				}
-			}
-
-		Skin.m_BloodColor = normalize(vec3(aColors[0], aColors[1], aColors[2]));
-	}
-
-	// create colorless version
-	int Step = Info.m_Format == CImageInfo::FORMAT_RGBA ? 4 : 3;
-
-	// make the texture gray scale
-	for(int i = 0; i < Info.m_Width*Info.m_Height; i++)
-	{
-		int v = (d[i*Step]+d[i*Step+1]+d[i*Step+2])/3;
-		d[i*Step] = v;
-		d[i*Step+1] = v;
-		d[i*Step+2] = v;
-	}
-
-
-	int Freq[256] = {0};
-	int OrgWeight = 0;
-	int NewWeight = 192;
-
-	// find most common frequence
-	for(int y = 0; y < BodySize; y++)
-		for(int x = 0; x < BodySize; x++)
-		{
-			if(d[y*Pitch+x*4+3] > 128)
-				Freq[d[y*Pitch+x*4]]++;
-		}
-
-	for(int i = 1; i < 256; i++)
-	{
-		if(Freq[OrgWeight] < Freq[i])
-			OrgWeight = i;
-	}
-
-	// reorder
-	int InvOrgWeight = 255-OrgWeight;
-	int InvNewWeight = 255-NewWeight;
-	for(int y = 0; y < BodySize; y++)
-		for(int x = 0; x < BodySize; x++)
-		{
-			int v = d[y*Pitch+x*4];
-			if(v <= OrgWeight)
-				v = (int)(((v/(float)OrgWeight) * NewWeight));
-			else
-				v = (int)(((v-OrgWeight)/(float)InvOrgWeight)*InvNewWeight + NewWeight);
-			d[y*Pitch+x*4] = v;
-			d[y*Pitch+x*4+1] = v;
-			d[y*Pitch+x*4+2] = v;
-		}
-
-	Skin.m_ColorTexture = pSelf->Graphics()->LoadTextureRaw(Info.m_Width, Info.m_Height, Info.m_Format, Info.m_pData, Info.m_Format, 0);
-	free(Info.m_pData);
-
-	// set skin data
-	str_copy(Skin.m_aName, aNameWithoutPng, sizeof(Skin.m_aName));
-	if(g_Config.m_Debug)
-	{
-		str_format(aBuf, sizeof(aBuf), "load skin %s", Skin.m_aName);
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "game", aBuf);
-	}
-	pSelf->m_aSkins.add(Skin);
-
 	return 0;
 }
 

@@ -81,7 +81,6 @@ private:
 	class CGhostItem
 	{
 	public:
-		CTeeRenderInfo m_RenderInfo;
 		CGhostSkin m_Skin;
 		CGhostPath m_Path;
 		int m_StartTick;

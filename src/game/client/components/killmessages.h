@@ -24,14 +24,12 @@ public:
 		char m_aVictimName[64];
 		int m_VictimTextContainerIndex;
 		float m_VitctimTextWidth;
-		CTeeRenderInfo m_VictimRenderInfo;
 
 		int m_KillerID;
 		int m_KillerTeam;
 		char m_aKillerName[64];
 		int m_KillerTextContainerIndex;
 		float m_KillerTextWidth;
-		CTeeRenderInfo m_KillerRenderInfo;
 
 		int m_ModeSpecial; // for CTF, if the guy is carrying a flag for example
 		int m_Tick;

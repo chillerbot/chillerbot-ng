@@ -2,7 +2,6 @@
 
 #include <engine/shared/config.h>
 #include <engine/map.h>
-#include <engine/graphics.h>
 
 #include <game/client/components/camera.h>
 #include <game/client/components/maplayers.h>
@@ -57,7 +56,6 @@ void CBackground::LoadBackground()
 	{
 		m_pLayers->InitBackground(m_pMap);
 		m_pImages->LoadBackground(m_pMap);
-		RenderTools()->RenderTilemapGenerateSkip(m_pLayers);
 		m_Loaded = true;
 	}
 	else if(str_comp(g_Config.m_ClBackgroundEntities, CURRENT) == 0)

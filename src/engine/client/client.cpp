@@ -16,22 +16,17 @@
 
 #include <game/client/components/menus.h>
 #include <game/client/gameclient.h>
-#include <game/editor/editor.h>
 
 #include <engine/client.h>
 #include <engine/config.h>
 #include <engine/console.h>
-#include <engine/editor.h>
 #include <engine/engine.h>
-#include <engine/graphics.h>
 #include <engine/input.h>
 #include <engine/keys.h>
 #include <engine/map.h>
 #include <engine/masterserver.h>
 #include <engine/serverbrowser.h>
-#include <engine/sound.h>
 #include <engine/storage.h>
-#include <engine/textrender.h>
 
 #include <engine/external/md5/md5.h>
 
@@ -75,6 +70,19 @@
 #undef main
 #endif
 
+
+#include <curses.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <cstdlib>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <iostream>
+
 void CGraph::Init(float Min, float Max)
 {
 	m_Min = Min;
@@ -112,62 +120,6 @@ void CGraph::Add(float v, float r, float g, float b)
 	m_aColors[m_Index][1] = g;
 	m_aColors[m_Index][2] = b;
 }
-
-void CGraph::Render(IGraphics *pGraphics, int Font, float x, float y, float w, float h, const char *pDescription)
-{
-	//m_pGraphics->BlendNormal();
-
-
-	pGraphics->TextureSet(-1);
-
-	pGraphics->QuadsBegin();
-	pGraphics->SetColor(0, 0, 0, 0.75f);
-	IGraphics::CQuadItem QuadItem(x, y, w, h);
-	pGraphics->QuadsDrawTL(&QuadItem, 1);
-	pGraphics->QuadsEnd();
-
-	pGraphics->LinesBegin();
-	pGraphics->SetColor(0.95f, 0.95f, 0.95f, 1.00f);
-	IGraphics::CLineItem LineItem(x, y+h/2, x+w, y+h/2);
-	pGraphics->LinesDraw(&LineItem, 1);
-	pGraphics->SetColor(0.5f, 0.5f, 0.5f, 0.75f);
-	IGraphics::CLineItem Array[2] = {
-		IGraphics::CLineItem(x, y+(h*3)/4, x+w, y+(h*3)/4),
-		IGraphics::CLineItem(x, y+h/4, x+w, y+h/4)};
-	pGraphics->LinesDraw(Array, 2);
-	for(int i = 1; i < MAX_VALUES; i++)
-	{
-		float a0 = (i-1)/(float)MAX_VALUES;
-		float a1 = i/(float)MAX_VALUES;
-		int i0 = (m_Index+i-1)&(MAX_VALUES-1);
-		int i1 = (m_Index+i)&(MAX_VALUES-1);
-
-		float v0 = (m_aValues[i0]-m_Min) / (m_Max-m_Min);
-		float v1 = (m_aValues[i1]-m_Min) / (m_Max-m_Min);
-
-		IGraphics::CColorVertex Array[2] = {
-			IGraphics::CColorVertex(0, m_aColors[i0][0], m_aColors[i0][1], m_aColors[i0][2], 0.75f),
-			IGraphics::CColorVertex(1, m_aColors[i1][0], m_aColors[i1][1], m_aColors[i1][2], 0.75f)};
-		pGraphics->SetColorVertex(Array, 2);
-		IGraphics::CLineItem LineItem(x+a0*w, y+h-v0*h, x+a1*w, y+h-v1*h);
-		pGraphics->LinesDraw(&LineItem, 1);
-
-	}
-	pGraphics->LinesEnd();
-
-	pGraphics->TextureSet(Font);
-	pGraphics->QuadsBegin();
-	pGraphics->QuadsText(x+2, y+h-16, 16, pDescription);
-
-	char aBuf[32];
-	str_format(aBuf, sizeof(aBuf), "%.2f", m_Max);
-	pGraphics->QuadsText(x+w-8*str_length(aBuf)-8, y+2, 16, aBuf);
-
-	str_format(aBuf, sizeof(aBuf), "%.2f", m_Min);
-	pGraphics->QuadsText(x+w-8*str_length(aBuf)-8, y+h-16, 16, aBuf);
-	pGraphics->QuadsEnd();
-}
-
 
 void CSmoothTime::Init(int64 Target)
 {
@@ -267,10 +219,7 @@ CClient::CClient() : m_DemoPlayer(&m_SnapshotDelta)
 	m_DemoRecorder[1] = CDemoRecorder(&m_SnapshotDelta);
 	m_DemoRecorder[2] = CDemoRecorder(&m_SnapshotDelta);
 
-	m_pEditor = 0;
 	m_pInput = 0;
-	m_pGraphics = 0;
-	m_pSound = 0;
 	m_pGameClient = 0;
 	m_pMap = 0;
 	m_pConsole = 0;
@@ -868,7 +817,6 @@ void CClient::ServerInfoRequest()
 
 int CClient::LoadData()
 {
-	m_DebugFont = Graphics()->LoadTexture("debug_font.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, IGraphics::TEXLOAD_NORESAMPLE);
 	return 1;
 }
 
@@ -941,11 +889,6 @@ void CClient::DebugRender()
 	if(!g_Config.m_Debug)
 		return;
 
-	//m_pGraphics->BlendNormal();
-	Graphics()->TextureSet(m_DebugFont);
-	Graphics()->MapScreen(0,0,Graphics()->ScreenWidth(),Graphics()->ScreenHeight());
-	Graphics()->QuadsBegin();
-
 	if(time_get()-LastSnap > time_freq())
 	{
 		LastSnap = time_get();
@@ -962,9 +905,8 @@ void CClient::DebugRender()
 	FrameTimeAvg = FrameTimeAvg*0.9f + m_RenderFrameTime*0.1f;
 	str_format(aBuffer, sizeof(aBuffer), "ticks: %8d %8d gfxmem: %dk fps: %3d",
 		m_CurGameTick[g_Config.m_ClDummy], m_PredTick[g_Config.m_ClDummy],
-		Graphics()->MemoryUsage()/1024,
+		0,
 		(int)(1.0f/FrameTimeAvg + 0.5f));
-	Graphics()->QuadsText(2, 2, 16, aBuffer);
 
 
 	{
@@ -980,7 +922,6 @@ void CClient::DebugRender()
 		str_format(aBuffer, sizeof(aBuffer), "send: %3d %5d+%4d=%5d (%3d kbps) avg: %5d\nrecv: %3d %5d+%4d=%5d (%3d kbps) avg: %5d",
 			SendPackets, SendBytes, SendPackets*42, SendTotal, (SendTotal*8)/1024, SendBytes/SendPackets,
 			RecvPackets, RecvBytes, RecvPackets*42, RecvTotal, (RecvTotal*8)/1024, RecvBytes/RecvPackets);
-		Graphics()->QuadsText(2, 14, 16, aBuffer);
 	}
 
 	// render rates
@@ -993,31 +934,12 @@ void CClient::DebugRender()
 			{
 				str_format(aBuffer, sizeof(aBuffer), "%4d %20s: %8d %8d %8d", i, GameClient()->GetItemName(i), m_SnapshotDelta.GetDataRate(i)/8, m_SnapshotDelta.GetDataUpdates(i),
 					(m_SnapshotDelta.GetDataRate(i)/m_SnapshotDelta.GetDataUpdates(i))/8);
-				Graphics()->QuadsText(2, 100+y*12, 16, aBuffer);
 				y++;
 			}
 		}
 	}
 
 	str_format(aBuffer, sizeof(aBuffer), "pred: %d ms", GetPredictionTime());
-	Graphics()->QuadsText(2, 70, 16, aBuffer);
-	Graphics()->QuadsEnd();
-
-	// render graphs
-	if(g_Config.m_DbgGraphs)
-	{
-		//Graphics()->MapScreen(0,0,400.0f,300.0f);
-		float w = Graphics()->ScreenWidth()/4.0f;
-		float h = Graphics()->ScreenHeight()/6.0f;
-		float sp = Graphics()->ScreenWidth()/100.0f;
-		float x = Graphics()->ScreenWidth()-w-sp;
-
-		m_FpsGraph.ScaleMax();
-		m_FpsGraph.ScaleMin();
-		m_FpsGraph.Render(Graphics(), m_DebugFont, x, sp*5, w, h, "FPS");
-		m_InputtimeMarginGraph.Render(Graphics(), m_DebugFont, x, sp*5+h+sp, w, h, "Prediction Margin");
-		m_GametimeMarginGraph.Render(Graphics(), m_DebugFont, x, sp*5+h+sp+h+sp, w, h, "Gametime Margin");
-	}
 }
 
 void CClient::Restart()
@@ -1039,17 +961,6 @@ const char *CClient::ErrorString()
 
 void CClient::Render()
 {
-	if(g_Config.m_ClOverlayEntities)
-	{
-		vec3 bg = HslToRgb(vec3(g_Config.m_ClBackgroundEntitiesHue/255.0f, g_Config.m_ClBackgroundEntitiesSat/255.0f, g_Config.m_ClBackgroundEntitiesLht/255.0f));
-		Graphics()->Clear(bg.r, bg.g, bg.b);
-	}
-	else
-	{
-		vec3 bg = HslToRgb(vec3(g_Config.m_ClBackgroundHue/255.0f, g_Config.m_ClBackgroundSat/255.0f, g_Config.m_ClBackgroundLht/255.0f));
-		Graphics()->Clear(bg.r, bg.g, bg.b);
-	}
-
 	GameClient()->OnRender();
 	DebugRender();
 
@@ -2653,9 +2564,6 @@ void CClient::InitInterfaces()
 {
 	// fetch interfaces
 	m_pEngine = Kernel()->RequestInterface<IEngine>();
-	m_pEditor = Kernel()->RequestInterface<IEditor>();
-	//m_pGraphics = Kernel()->RequestInterface<IEngineGraphics>();
-	m_pSound = Kernel()->RequestInterface<IEngineSound>();
 	m_pGameClient = Kernel()->RequestInterface<IGameClient>();
 	m_pInput = Kernel()->RequestInterface<IEngineInput>();
 	m_pMap = Kernel()->RequestInterface<IEngineMap>();
@@ -2712,24 +2620,6 @@ void CClient::Run()
 		atexit(SDL_Quit); // ignore_convention
 	}
 
-	// init graphics
-	{
-		m_pGraphics = CreateEngineGraphicsThreaded();
-
-		bool RegisterFail = false;
-		RegisterFail = RegisterFail || !Kernel()->RegisterInterface(static_cast<IEngineGraphics*>(m_pGraphics)); // register graphics as both
-		RegisterFail = RegisterFail || !Kernel()->RegisterInterface(static_cast<IGraphics*>(m_pGraphics), false);
-
-		if(RegisterFail || m_pGraphics->Init() != 0)
-		{
-			dbg_msg("client", "couldn't init graphics");
-			return;
-		}
-	}
-
-	// init sound, allowed to fail
-	m_SoundInitFailed = Sound()->Init() != 0;
-
 	// open socket
 	{
 		NETADDR BindAddr;
@@ -2753,22 +2643,12 @@ void CClient::Run()
 		}
 	}
 
-	// init font rendering
-	Kernel()->RequestInterface<IEngineTextRender>()->Init();
 
 	// init the input
 	Input()->Init();
 
 	// start refreshing addresses while we load
 	MasterServer()->RefreshAddresses(m_NetClient[0].NetType());
-
-	// init the editor
-	m_pEditor->Init();
-
-	// load and save a map to fix it
-	/*if(m_pEditor->Load(arg, IStorage::TYPE_ALL))
-		m_pEditor->Save(arg);
-	return;*/
 
 	// load data
 	if(!LoadData())
@@ -2816,8 +2696,29 @@ void CClient::Run()
 	int64 LastTime = time_get_microseconds();
 	int64 LastRenderTime = time_get();
 
+  static struct termios origtc, newtc;
+  tcgetattr(0, &origtc);                         // get orig tty settings
+  newtc = origtc;                                // copy them
+  newtc.c_lflag &= ~ICANON;                      // put in '1 key mode'
+  newtc.c_lflag &= ~ECHO;                        // turn off echo
+  
+  system("stty -icanon time 1 min 0");
+
 	while(1)
 	{
+    char key = '0';
+    // key = getchar();
+
+    if (key == 'a')
+    {
+      dbg_msg("control", "A PRESSED");
+    }
+    else
+    {
+      // dbg_msg("control", "KEYPRESSED %c", key);
+    }
+
+
 		set_new_tick();
 
 		// handle pending connects
@@ -2861,9 +2762,6 @@ void CClient::Run()
 		Updater()->Update();
 #endif
 
-		// update sound
-		Sound()->Update();
-
 		// panic quit button
 		if(CtrlShiftKey(KEY_Q, LastQ))
 		{
@@ -2901,9 +2799,7 @@ void CClient::Run()
 			Update();
 			int64 Now = time_get();
 
-			if((g_Config.m_GfxBackgroundRender || m_pGraphics->WindowOpen())
-				&& (!g_Config.m_GfxAsyncRenderOld || m_pGraphics->IsIdle())
-				&& (!g_Config.m_GfxRefreshRate || (time_freq() / (int64)g_Config.m_GfxRefreshRate) <= Now - LastRenderTime))
+			if("graprhics stuff")
 			{
 				m_RenderFrames++;
 
@@ -2932,10 +2828,8 @@ void CClient::Run()
 							Render();
 						else
 						{
-							m_pEditor->UpdateAndRender();
 							DebugRender();
 						}
-						m_pGraphics->Swap();
 					}
 				}
 				else
@@ -2945,10 +2839,8 @@ void CClient::Run()
 						Render();
 					else
 					{
-						m_pEditor->UpdateAndRender();
 						DebugRender();
 					}
-					m_pGraphics->Swap();
 				}
 
 				Input()->NextFrame();
@@ -2956,7 +2848,6 @@ void CClient::Run()
 
 			if(Input()->VideoRestartNeeded())
 			{
-				m_pGraphics->Init();
 				LoadData();
 				GameClient()->OnInit();
 			}
@@ -2978,11 +2869,7 @@ void CClient::Run()
 		int64 Now = time_get_microseconds();
 		int64 SleepTimeInMicroSeconds = 0;
 		bool Slept = false;
-		if(
-#ifdef CONF_DEBUG
-			g_Config.m_DbgStress ||
-#endif
-			(g_Config.m_ClRefreshRateInactive && !m_pGraphics->WindowActive()))
+		if("grapirx inactive")
 		{
 			SleepTimeInMicroSeconds = ((int64)1000000 / (int64)g_Config.m_ClRefreshRateInactive) - (Now - LastTime);
 			if(SleepTimeInMicroSeconds / (int64)1000 > (int64)0)
@@ -3030,14 +2917,6 @@ void CClient::Run()
 
 	GameClient()->OnShutdown();
 	Disconnect();
-
-	delete m_pEditor;
-	m_pGraphics->Shutdown();
-
-	// shutdown SDL
-	{
-		SDL_Quit();
-	}
 }
 
 bool CClient::CtrlShiftKey(int Key, bool &Last)
@@ -3086,7 +2965,6 @@ void CClient::Con_Quit(IConsole::IResult *pResult, void *pUserData)
 void CClient::Con_Minimize(IConsole::IResult *pResult, void *pUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	pSelf->Graphics()->Minimize();
 }
 
 void CClient::Con_Ping(IConsole::IResult *pResult, void *pUserData)
@@ -3102,7 +2980,6 @@ void CClient::AutoScreenshot_Start()
 {
 	if(g_Config.m_ClAutoScreenshot)
 	{
-		Graphics()->TakeScreenshot("auto/autoscreen");
 		m_AutoScreenshotRecycle = true;
 	}
 }
@@ -3111,7 +2988,6 @@ void CClient::AutoStatScreenshot_Start()
 {
 	if(g_Config.m_ClAutoStatboardScreenshot)
 	{
-		Graphics()->TakeScreenshot("auto/stats/autoscreen");
 		m_AutoStatScreenshotRecycle = true;
 	}
 }
@@ -3167,7 +3043,6 @@ void CClient::AutoCSV_Cleanup()
 void CClient::Con_Screenshot(IConsole::IResult *pResult, void *pUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	pSelf->Graphics()->TakeScreenshot(0);
 }
 
 void CClient::Con_Rcon(IConsole::IResult *pResult, void *pUserData)
@@ -3409,81 +3284,43 @@ void CClient::SwitchWindowScreen(int Index)
 	if(g_Config.m_GfxFullscreen)
 	{
 		ToggleFullscreen();
-		if(Graphics()->SetWindowScreen(Index))
-			g_Config.m_GfxScreen = Index;
 		ToggleFullscreen();
-	}
-	else
-	{
-		if(Graphics()->SetWindowScreen(Index))
-			g_Config.m_GfxScreen = Index;
 	}
 }
 
 void CClient::ConchainWindowScreen(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	if(pSelf->Graphics() && pResult->NumArguments())
-	{
-		if(g_Config.m_GfxScreen != pResult->GetInteger(0))
-			pSelf->SwitchWindowScreen(pResult->GetInteger(0));
-	}
-	else
-		pfnCallback(pResult, pCallbackUserData);
 }
 
 void CClient::ToggleFullscreen()
 {
-	if(Graphics()->Fullscreen(g_Config.m_GfxFullscreen^1))
-		g_Config.m_GfxFullscreen ^= 1;
+
 }
 
 void CClient::ConchainFullscreen(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	if(pSelf->Graphics() && pResult->NumArguments())
-	{
-		if(g_Config.m_GfxFullscreen != pResult->GetInteger(0))
-			pSelf->ToggleFullscreen();
-	}
-	else
-		pfnCallback(pResult, pCallbackUserData);
 }
 
 void CClient::ToggleWindowBordered()
 {
 	g_Config.m_GfxBorderless ^= 1;
-	Graphics()->SetWindowBordered(!g_Config.m_GfxBorderless);
 }
 
 void CClient::ConchainWindowBordered(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	if(pSelf->Graphics() && pResult->NumArguments())
-	{
-		if(!g_Config.m_GfxFullscreen && (g_Config.m_GfxBorderless != pResult->GetInteger(0)))
-			pSelf->ToggleWindowBordered();
-	}
-	else
-		pfnCallback(pResult, pCallbackUserData);
 }
 
 void CClient::ToggleWindowVSync()
 {
-	if(Graphics()->SetVSync(g_Config.m_GfxVsync^1))
-		g_Config.m_GfxVsync ^= 1;
+
 }
 
 void CClient::ConchainWindowVSync(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	if(pSelf->Graphics() && pResult->NumArguments())
-	{
-		if(g_Config.m_GfxVsync != pResult->GetInteger(0))
-			pSelf->ToggleWindowVSync();
-	}
-	else
-		pfnCallback(pResult, pCallbackUserData);
 }
 
 void CClient::ConchainTimeoutSeed(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
@@ -3623,9 +3460,7 @@ int main(int argc, const char **argv) // ignore_convention
 	IConsole *pConsole = CreateConsole(CFGFLAG_CLIENT);
 	IStorage *pStorage = CreateStorage("Teeworlds", IStorage::STORAGETYPE_CLIENT, argc, argv); // ignore_convention
 	IConfig *pConfig = CreateConfig();
-	IEngineSound *pEngineSound = CreateEngineSound();
 	IEngineInput *pEngineInput = CreateEngineInput();
-	IEngineTextRender *pEngineTextRender = CreateEngineTextRender();
 	IEngineMap *pEngineMap = CreateEngineMap();
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
 
@@ -3642,14 +3477,8 @@ int main(int argc, const char **argv) // ignore_convention
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pConsole);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pConfig);
 
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineSound*>(pEngineSound)); // register as both
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<ISound*>(pEngineSound), false);
-
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineInput*>(pEngineInput)); // register as both
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IInput*>(pEngineInput), false);
-
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineTextRender*>(pEngineTextRender)); // register as both
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<ITextRender*>(pEngineTextRender), false);
 
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineMap*>(pEngineMap)); // register as both
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IMap*>(pEngineMap), false);
@@ -3657,7 +3486,6 @@ int main(int argc, const char **argv) // ignore_convention
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineMasterServer*>(pEngineMasterServer)); // register as both
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IMasterServer*>(pEngineMasterServer), false);
 
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(CreateEditor(), false);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(CreateGameClient(), false);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pStorage);
 
