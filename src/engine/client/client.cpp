@@ -58,6 +58,10 @@
 	#include <windows.h>
 #endif
 
+#if defined(CONF_FAMILY_UNIX)
+	#include <termios.h>
+#endif
+
 #include "friends.h"
 #include "serverbrowser.h"
 #include "updater.h"
@@ -69,19 +73,6 @@
 #ifdef main
 #undef main
 #endif
-
-
-#include <curses.h>
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <iostream>
 
 void CGraph::Init(float Min, float Max)
 {
@@ -2696,29 +2687,18 @@ void CClient::Run()
 	int64 LastTime = time_get_microseconds();
 	int64 LastRenderTime = time_get();
 
-  static struct termios origtc, newtc;
-  tcgetattr(0, &origtc);                         // get orig tty settings
-  newtc = origtc;                                // copy them
-  newtc.c_lflag &= ~ICANON;                      // put in '1 key mode'
-  newtc.c_lflag &= ~ECHO;                        // turn off echo
-  
-  system("stty -icanon time 1 min 0");
+#if defined(CONF_FAMILY_UNIX)
+	static struct termios origtc, newtc;
+	tcgetattr(0, &origtc);                         // get orig tty settings
+	newtc = origtc;                                // copy them
+	newtc.c_lflag &= ~ICANON;                      // put in '1 key mode'
+	newtc.c_lflag &= ~ECHO;                        // turn off echo
+	system("stty -icanon time 1 min 0");
+#endif
+
 
 	while(1)
 	{
-    char key = '0';
-    // key = getchar();
-
-    if (key == 'a')
-    {
-      dbg_msg("control", "A PRESSED");
-    }
-    else
-    {
-      // dbg_msg("control", "KEYPRESSED %c", key);
-    }
-
-
 		set_new_tick();
 
 		// handle pending connects

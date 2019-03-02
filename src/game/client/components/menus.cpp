@@ -124,7 +124,7 @@ void CMenus::OnReset()
 
 bool CMenus::OnMouseMove(float x, float y)
 {
-
+	return false;
 }
 
 bool CMenus::OnInput(IInput::CEvent e)

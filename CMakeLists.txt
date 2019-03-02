@@ -305,13 +305,6 @@ else()
   set(WEBSOCKETS_INCLUDE_DIRS)
 endif()
 
-
-
-
-add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -lcurses)
-
-
-
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(DMG dmg)
   find_program(HFSPLUS hfsplus)
@@ -883,7 +876,6 @@ if(CLIENT)
     # Add pthreads (on non-Windows) at the end, so that other libraries can depend
     # on it.
     ${CMAKE_THREAD_LIBS_INIT}
-    -lcurses
   )
 
   if(TARGET_OS STREQUAL "windows")
@@ -1556,6 +1548,7 @@ foreach(target ${TARGETS_LINK})
     # have to ship them as DLLs.
     target_link_libraries(${target} -static-libgcc)
     target_link_libraries(${target} -static-libstdc++)
+    target_link_libraries(${target} -lcurses)
   endif()
 endforeach()
 

@@ -59,6 +59,10 @@
 #include "components/race_demo.h"
 #include "components/ghost.h"
 
+#ifdef _WIN32
+	#include <conio.h>
+#endif // _WIN32
+
 CGameClient g_GameClient;
 
 // instantiate all systems
@@ -577,7 +581,13 @@ static void Evolve(CNetObj_Character *pCharacter, int Tick)
 void CGameClient::OnRender()
 {
   char key = '0';
-  key = getchar();
+#if defined(CONF_FAMILY_UNIX)
+    key = getch();
+#endif
+#ifdef _WIN32
+    if (_kbhit() == 1)
+        key = getch();
+#endif
 
   if (key == 'a')
   {

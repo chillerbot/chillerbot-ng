@@ -275,7 +275,7 @@ int CControls::SnapInput(int *pData)
 		}
 
 		// stress testing
-		if(true)
+		if(false)
 		{
 			float t = Client()->LocalTime();
 			mem_zero(&m_InputData[g_Config.m_ClDummy], sizeof(m_InputData[0]));
@@ -288,8 +288,8 @@ int CControls::SnapInput(int *pData)
 			m_InputData[g_Config.m_ClDummy].m_TargetX = (int)(sinf(t*3)*100.0f);
 			m_InputData[g_Config.m_ClDummy].m_TargetY = (int)(cosf(t*3)*100.0f);
 		}
-    // chiller controls
-    // m_InputData[g_Config.m_ClDummy].m_Direction = g_Config.m_ClChillerDir;
+		// chiller controls
+		m_InputData[g_Config.m_ClDummy].m_Direction = g_Config.m_ClChillerDir;
 
 		// check if we need to send input
 		if(m_InputData[g_Config.m_ClDummy].m_Direction != m_LastData[g_Config.m_ClDummy].m_Direction) Send = true;
