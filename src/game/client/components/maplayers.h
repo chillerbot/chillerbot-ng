@@ -137,6 +137,12 @@ public:
 	void EnvelopeUpdate();
 
 	static void EnvelopeEval(float TimeOffset, int Env, float *pChannels, void *pUser);
+
+private:
+
+  // chillerbot-ng
+  void RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Color, int RenderFlags, void *pUser, int ColorEnv, int ColorEnvOffset);
+  int m_NextRender;
 };
 
 #endif

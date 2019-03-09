@@ -290,6 +290,15 @@ int CControls::SnapInput(int *pData)
 		}
 		// chiller controls
 		m_InputData[g_Config.m_ClDummy].m_Direction = g_Config.m_ClChillerDir;
+    if (g_Config.m_ClChillerJmp > 0)
+    {
+      m_InputData[g_Config.m_ClDummy].m_Jump = 1;
+      g_Config.m_ClChillerJmp--;
+    }
+    else
+    {
+      m_InputData[g_Config.m_ClDummy].m_Jump = 0;
+    }
 
 		// check if we need to send input
 		if(m_InputData[g_Config.m_ClDummy].m_Direction != m_LastData[g_Config.m_ClDummy].m_Direction) Send = true;

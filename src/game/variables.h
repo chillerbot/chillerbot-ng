@@ -6,6 +6,7 @@
 
 // chiller
 MACRO_CONFIG_INT(ClChillerDir, cl_chiller_dir, 0, -1, 1, CFGFLAG_CLIENT|CFGFLAG_SAVE, "walk this direction")
+MACRO_CONFIG_INT(ClChillerJmp, cl_chiller_jmp, 0, 0, 1000, CFGFLAG_CLIENT|CFGFLAG_SAVE, "jump x ticks")
 
 // client
 MACRO_CONFIG_INT(ClPredict, cl_predict, 1, 0, 1, CFGFLAG_CLIENT|CFGFLAG_SAVE, "Predict client movements")

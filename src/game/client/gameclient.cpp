@@ -582,7 +582,7 @@ void CGameClient::OnRender()
 {
   char key = '0';
 #if defined(CONF_FAMILY_UNIX)
-    key = getch();
+    key = getchar();
 #endif
 #ifdef _WIN32
     if (_kbhit() == 1)
@@ -591,8 +591,15 @@ void CGameClient::OnRender()
 
   if (key == 'a')
   {
-    dbg_msg("control", "A PRESSED");
-    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 1 : -1;
+    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 0 : -1;
+  }
+  else if (key == 'd')
+  {
+    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == 1 ? 0 : 1;
+  }
+  else if (key == ' ')
+  {
+    g_Config.m_ClChillerJmp = 10; // jump 10 ticks
   }
   else if (key == 'k')
   {
