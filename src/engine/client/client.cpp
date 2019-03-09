@@ -69,7 +69,6 @@
 
 #include <zlib.h>
 
-#include "SDL.h"
 #ifdef main
 #undef main
 #endif
@@ -2600,17 +2599,6 @@ void CClient::Run()
 		g_UuidManager.DebugDump();
 	}
 
-	// init SDL
-	{
-		if(SDL_Init(0) < 0)
-		{
-			dbg_msg("client", "unable to init SDL base: %s", SDL_GetError());
-			return;
-		}
-
-		atexit(SDL_Quit); // ignore_convention
-	}
-
 	// open socket
 	{
 		NETADDR BindAddr;
@@ -3402,14 +3390,8 @@ void CClient::HandleConnectLink(const char *pArg)
 		Upstream latency
 */
 
-#if defined(CONF_PLATFORM_MACOSX) || defined(__ANDROID__)
-extern "C" int SDL_main(int argc, char **argv_) // ignore_convention
-{
-	const char **argv = const_cast<const char **>(argv_);
-#else
 int main(int argc, const char **argv) // ignore_convention
 {
-#endif
 	bool Silent = false;
 	bool RandInitFailed = false;
 

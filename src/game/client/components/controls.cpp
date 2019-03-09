@@ -4,8 +4,6 @@
 
 #include <base/math.h>
 
-#include <SDL.h>
-
 #include <engine/shared/config.h>
 #include <engine/serverbrowser.h>
 
@@ -338,106 +336,6 @@ void CControls::OnRender()
 
 	int64 CurTime = time_get();
 	bool FireWasPressed = false;
-
-	if( m_Joystick )
-	{
-		// Get input from left joystick
-		int RunX = SDL_JoystickGetAxis(m_Joystick, LEFT_JOYSTICK_X);
-		int RunY = SDL_JoystickGetAxis(m_Joystick, LEFT_JOYSTICK_Y);
-		bool RunPressed = (RunX != 0 || RunY != 0);
-		// Get input from right joystick
-		int AimX = SDL_JoystickGetAxis(m_Joystick, SECOND_RIGHT_JOYSTICK_X);
-		int AimY = SDL_JoystickGetAxis(m_Joystick, SECOND_RIGHT_JOYSTICK_Y);
-		bool AimPressed = (AimX != 0 || AimY != 0);
-		// Get input from another right joystick
-		int HookX = SDL_JoystickGetAxis(m_Joystick, RIGHT_JOYSTICK_X);
-		int HookY = SDL_JoystickGetAxis(m_Joystick, RIGHT_JOYSTICK_Y);
-		bool HookPressed = (HookX != 0 || HookY != 0);
-
-		if( m_JoystickRunPressed != RunPressed )
-		{
-			if( RunPressed )
-			{
-				if( m_JoystickTapTime + time_freq() > CurTime ) // Tap in less than 1 second to jump
-					m_InputData[g_Config.m_ClDummy].m_Jump = 1;
-			}
-			else
-				m_InputData[g_Config.m_ClDummy].m_Jump = 0;
-			m_JoystickTapTime = CurTime;
-		}
-
-		m_JoystickRunPressed = RunPressed;
-
-		if( RunPressed )
-		{
-			m_InputDirectionLeft[g_Config.m_ClDummy] = (RunX < -JOYSTICK_RUN_DISTANCE);
-			m_InputDirectionRight[g_Config.m_ClDummy] = (RunX > JOYSTICK_RUN_DISTANCE);
-		}
-
-		// Move 500ms in the same direction, to prevent speed bump when tapping
-		if( !RunPressed && m_JoystickTapTime + time_freq() / 2 > CurTime )
-		{
-			m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
-			m_InputDirectionRight[g_Config.m_ClDummy] = 0;
-		}
-
-		if( HookPressed )
-		{
-			m_MousePos[g_Config.m_ClDummy] = vec2(HookX / 30, HookY / 30);
-			ClampMousePos();
-			m_InputData[g_Config.m_ClDummy].m_Hook = 1;
-		}
-		else
-		{
-			m_InputData[g_Config.m_ClDummy].m_Hook = 0;
-		}
-
-		if( AimPressed )
-		{
-			m_MousePos[g_Config.m_ClDummy] = vec2(AimX / 30, AimY / 30);
-			ClampMousePos();
-		}
-
-		if( AimPressed != m_JoystickFirePressed )
-		{
-			// Fire when releasing joystick
-			if( !AimPressed )
-			{
-				m_InputData[g_Config.m_ClDummy].m_Fire ++;
-				if( (bool)(m_InputData[g_Config.m_ClDummy].m_Fire % 2) != AimPressed )
-					m_InputData[g_Config.m_ClDummy].m_Fire ++;
-				FireWasPressed = true;
-			}
-		}
-
-		m_JoystickFirePressed = AimPressed;
-	}
-
-	if( m_Gamepad )
-	{
-		// Get input from left joystick
-		int RunX = SDL_JoystickGetAxis(m_Gamepad, LEFT_JOYSTICK_X);
-		int RunY = SDL_JoystickGetAxis(m_Gamepad, LEFT_JOYSTICK_Y);
-		if( m_UsingGamepad )
-		{
-			m_InputDirectionLeft[g_Config.m_ClDummy] = (RunX < -GAMEPAD_DEAD_ZONE);
-			m_InputDirectionRight[g_Config.m_ClDummy] = (RunX > GAMEPAD_DEAD_ZONE);
-		}
-
-		// Get input from right joystick
-		int AimX = SDL_JoystickGetAxis(m_Gamepad, RIGHT_JOYSTICK_X);
-		int AimY = SDL_JoystickGetAxis(m_Gamepad, RIGHT_JOYSTICK_Y);
-		if( abs(AimX) > GAMEPAD_DEAD_ZONE || abs(AimY) > GAMEPAD_DEAD_ZONE )
-		{
-			m_MousePos[g_Config.m_ClDummy] = vec2(AimX / 30, AimY / 30);
-			ClampMousePos();
-		}
-
-		if( !m_UsingGamepad && (abs(AimX) > GAMEPAD_DEAD_ZONE || abs(AimY) > GAMEPAD_DEAD_ZONE || abs(RunX) > GAMEPAD_DEAD_ZONE || abs(RunY) > GAMEPAD_DEAD_ZONE) )
-		{
-			m_UsingGamepad = true;
-		}
-	}
 
 	CServerInfo Info;
 	GameClient()->Client()->GetServerInfo(&Info);
