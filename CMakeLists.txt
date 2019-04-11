@@ -751,14 +751,10 @@ list(APPEND TARGETS_OWN engine-shared game-shared)
 if(CLIENT)
   # Sources
   set_glob(ENGINE_CLIENT GLOB src/engine/client
-    backend_sdl.cpp
-    backend_sdl.h
     client.cpp
     client.h
     friends.cpp
     friends.h
-    graphics_threaded.cpp
-    graphics_threaded.h
     http.cpp
     http.h
     input.cpp

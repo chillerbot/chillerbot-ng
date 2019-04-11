@@ -2725,7 +2725,7 @@ void CClient::Run()
 
 		// update input
 		if(Input()->Update())
-			break;	// SDL_QUIT
+			break;
 #if defined(CONF_AUTOUPDATE)
 		Updater()->Update();
 #endif
@@ -3248,12 +3248,7 @@ void CClient::ConchainServerBrowserUpdate(IConsole::IResult *pResult, void *pUse
 
 void CClient::SwitchWindowScreen(int Index)
 {
-	// Todo SDL: remove this when fixed (changing screen when in fullscreen is bugged)
-	if(g_Config.m_GfxFullscreen)
-	{
-		ToggleFullscreen();
-		ToggleFullscreen();
-	}
+
 }
 
 void CClient::ConchainWindowScreen(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
