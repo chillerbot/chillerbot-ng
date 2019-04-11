@@ -851,7 +851,7 @@ void CMapLayers::RenderTileLayer(int LayerIndex, vec4* pColor, CMapItemLayerTile
 	if(Visuals.m_BufferContainerIndex == -1)
 		return; //no visuals were created
 	
-	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
+	float ScreenX0 = 0.0f, ScreenY0 = 0.0f, ScreenX1 = 10.0f, ScreenY1 = 10.0f;
 	
 	float r=1, g=1, b=1, a=1;
 	if(pTileLayer->m_ColorEnv >= 0)
@@ -1101,7 +1101,7 @@ void CMapLayers::RenderKillTileBorder(int LayerIndex, vec4* pColor, CMapItemLaye
 	STileLayerVisuals& Visuals = *m_TileLayerVisuals[LayerIndex];
 	if(Visuals.m_BufferContainerIndex == -1) return; //no visuals were created
 	
-	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
+	float ScreenX0 = 0.0f, ScreenY0 = 0.0f, ScreenX1 = 10.0f, ScreenY1 = 10.0f;
 	
 	bool DrawBorder = false;
 	
@@ -1551,7 +1551,7 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
   int rendered_tiles = 0;
   dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
   Scale = 1.0; // chillerbot tile size is always one character
-	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
+  float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
   int render_dist = 16; // render tiles surroundign the tee
   ScreenX0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) - (render_dist);
   ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) - (render_dist / 2);

@@ -67,7 +67,6 @@ void CDebugHud::RenderTuning()
 		m_pClient->m_Tuning[g_Config.m_ClDummy].Get(i, &Current);
 		StandardTuning.Get(i, &Standard);
 
-		float w;
 		float x = 5.0f;
 
 		str_format(aBuf, sizeof(aBuf), "%.2f", Standard);

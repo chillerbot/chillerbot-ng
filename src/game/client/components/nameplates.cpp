@@ -14,7 +14,7 @@
 
 void CNamePlates::MapscreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup)
 {
-	float Points[4];
+
 }
 
 void CNamePlates::RenderNameplate(

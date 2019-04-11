@@ -295,7 +295,6 @@ find_package(Opus)
 find_package(Opusfile)
 find_package(Pnglite)
 find_package(PythonInterp)
-find_package(SDL2)
 find_package(Threads)
 find_package(Wavpack)
 if(WEBSOCKETS)
@@ -358,7 +357,6 @@ show_dependency_status("Opus" OPUS)
 show_dependency_status("Opusfile" OPUSFILE)
 show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
-show_dependency_status("SDL2" SDL2)
 show_dependency_status("Wavpack" WAVPACK)
 show_dependency_status("Zlib" ZLIB)
 if(WEBSOCKETS)
@@ -391,9 +389,6 @@ if(CLIENT AND NOT(OPUS_FOUND))
 endif()
 if(CLIENT AND NOT(OPUSFILE_FOUND))
   message(SEND_ERROR "You must install Opusfile to compile the DDNet client")
-endif()
-if(CLIENT AND NOT(SDL2_FOUND))
-  message(SEND_ERROR "You must install SDL2 to compile the DDNet client")
 endif()
 if(NOT(GTEST_FOUND))
   if(DOWNLOAD_GTEST)
@@ -511,7 +506,6 @@ set(COPY_FILES
   ${CURL_COPY_FILES}
   ${FREETYPE_COPY_FILES}
   ${OPUSFILE_COPY_FILES}
-  ${SDL2_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
 
@@ -859,7 +853,6 @@ if(CLIENT)
     ${FREETYPE_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${PNGLITE_LIBRARIES}
-    ${SDL2_LIBRARIES}
     ${WAVPACK_LIBRARIES}
 
     # Order of these three is important.
@@ -906,7 +899,6 @@ if(CLIENT)
     ${OPUSFILE_INCLUDE_DIRS}
     ${OPUS_INCLUDE_DIRS}
     ${PNGLITE_INCLUDE_DIRS}
-    ${SDL2_INCLUDE_DIRS}
     ${WAVPACK_INCLUDE_DIRS}
   )
 
@@ -1398,9 +1390,7 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${TARGET_CLIENT}.icns ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/
     COMMAND ${CMAKE_COMMAND} -E copy bundle/client/Info.plist ${PROJECT_SOURCE_DIR}/other/bundle/client/PkgInfo ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_CLIENT}> ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/ddnet-libs/sdl/mac/lib64/SDL2.framework ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/SDL2.framework
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/ddnet-libs/freetype/mac/lib64/libfreetype.6.dylib ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/
-    COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change @rpath/SDL2.framework/Versions/A/SDL2 @executable_path/../Frameworks/SDL2.framework/SDL2 ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT}
     COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change /usr/local/lib/libfreetype.6.dylib @executable_path/../Frameworks/libfreetype.6.dylib ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT}
 
     # SERVER
