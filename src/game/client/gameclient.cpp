@@ -606,9 +606,9 @@ void CGameClient::OnRender()
 	{
 		m_pChat->SayChat("/list");
 	}
-	else if (key == 'v') // view / verbose
+	else if (key == 'v') // view
 	{
-		// todo
+		g_Config.m_ClChillerRender = g_Config.m_ClChillerRender ? 0 : 1;
 	}
 	else
 	{

@@ -1540,6 +1540,8 @@ void CMapLayers::OnRender()
 
 void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Color, int RenderFlags, void *pUser, int ColorEnv, int ColorEnvOffset)
 {
+	if (!g_Config.m_ClChillerRender)
+		return;
 	if (!m_pClient->m_Snap.m_pLocalCharacter) // TODO: also render map if tee is dead and also add possibility to spectate
 		return;
 
