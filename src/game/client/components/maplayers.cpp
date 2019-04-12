@@ -1540,24 +1540,24 @@ void CMapLayers::OnRender()
 
 void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Color, int RenderFlags, void *pUser, int ColorEnv, int ColorEnvOffset)
 {
-  if (!m_pClient->m_Snap.m_pLocalCharacter) // TODO: also render map if tee is dead and also add possibility to spectate
-    return;
+	if (!m_pClient->m_Snap.m_pLocalCharacter) // TODO: also render map if tee is dead and also add possibility to spectate
+		return;
 
-  char aFrame[32][64]; // tee aka center is at 8/16   y/x
-  for (int i = 0; i < 32; i++)
-  {
-    str_copy(aFrame[i], "                               ", sizeof(aFrame[i]));
-  }
-  int rendered_tiles = 0;
-  dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
-  Scale = 1.0; // chillerbot tile size is always one character
-  float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-  int render_dist = 16; // render tiles surroundign the tee
-  ScreenX0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) - (render_dist);
-  ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) - (render_dist / 2);
-  ScreenX1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) + (render_dist);
-  ScreenY1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) + (render_dist / 2);
-  dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+	char aFrame[32][64]; // tee aka center is at 8/16   y/x
+	for (int i = 0; i < 32; i++)
+	{
+		str_copy(aFrame[i], "                               ", sizeof(aFrame[i]));
+	}
+	int rendered_tiles = 0;
+	dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
+	Scale = 1.0; // chillerbot tile size is always one character
+	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
+	int render_dist = 16; // render tiles surroundign the tee
+	ScreenX0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) - (render_dist);
+	ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) - (render_dist / 2);
+	ScreenX1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) + (render_dist);
+	ScreenY1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) + (render_dist / 2);
+	dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 
 	// calculate the final pixelsize for the tiles
 	float TilePixelSize = 1024/32.0f;
@@ -1593,34 +1593,32 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
 
 			if(!"idk what this is")
 			{
-				if(mx<0)
-					mx = 0;
-				if(mx>=w)
-					mx = w-1;
-				if(my<0)
-					my = 0;
-				if(my>=h)
-					my = h-1;
+			if(mx<0)
+			mx = 0;
+			if(mx>=w)
+			mx = w-1;
+			if(my<0)
+			my = 0;
+			if(my>=h)
+			my = h-1;
 			}
 			else
 			{
-				if(mx<0)
-					continue; // mx = 0;
-				if(mx>=w)
-					continue; // mx = w-1;
-				if(my<0)
-					continue; // my = 0;
-				if(my>=h)
-					continue; // my = h-1;
+			if(mx<0)
+			continue; // mx = 0;
+			if(mx>=w)
+			continue; // mx = w-1;
+			if(my<0)
+			continue; // my = 0;
+			if(my>=h)
+			continue; // my = h-1;
 			}
 
 			int c = mx + my*w;
-
 			unsigned char Index = pTiles[c].m_Index;
 			if(Index)
 			{
 				unsigned char Flags = pTiles[c].m_Flags;
-
 				bool Render = true;
 
 				if(Render)
@@ -1669,28 +1667,28 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
 						y3 = y2;
 						y2 = y1;
 						y1 = Tmp;
-          }
-          dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
-          int renderX = (x*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
-          int renderY = (y*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
-          dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
-          renderX += 32;
-          renderY += 16;
-          dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
-          if (renderX > 0 && renderX < 64 && renderY > 0 && renderY < 32)
-          {
-            aFrame[renderY][renderX] = '#';
-            rendered_tiles++;
-          }
-          aFrame[16][32] = 'o'; // tee in center
-          aFrame[15][32] = 'o'; // tee in center
-          aFrame[17][32] = 'o'; // tee in center
+					}
+					dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
+					int renderX = (x*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
+					int renderY = (y*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
+					dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
+					renderX += 32;
+					renderY += 16;
+					dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
+					if (renderX > 0 && renderX < 64 && renderY > 0 && renderY < 32)
+					{
+						aFrame[renderY][renderX] = '#';
+						rendered_tiles++;
+					}
+					aFrame[16][32] = 'o'; // tee in center
+					aFrame[15][32] = 'o'; // tee in center
+					aFrame[17][32] = 'o'; // tee in center
 				}
 			}
-      else
-      {
-          // dbg_msg("map", "skip at x: %.2f y: %.2f w: %.2f h: %.2f", x*Scale, y*Scale, Scale, Scale);
-      }
+			else
+			{
+				// dbg_msg("map", "skip at x: %.2f y: %.2f w: %.2f h: %.2f", x*Scale, y*Scale, Scale, Scale);
+			}
 			x += pTiles[c].m_Skip;
 		}
 	}

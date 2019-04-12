@@ -578,38 +578,42 @@ void CGameClient::OnRender()
 {
   char key = '0';
 #if defined(CONF_FAMILY_UNIX)
-    key = getchar();
+		key = getchar();
 #endif
 #ifdef _WIN32
-    if (_kbhit() == 1)
-        key = getch();
+		if (_kbhit() == 1)
+			key = getch();
 #endif
 
-  if (key == 'a')
-  {
-    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 0 : -1;
-  }
-  else if (key == 'd')
-  {
-    g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == 1 ? 0 : 1;
-  }
-  else if (key == ' ')
-  {
-    g_Config.m_ClChillerJmp = 10; // jump 10 ticks
-  }
-  else if (key == 'k')
-  {
-    SendKill(-1);
-    dbg_msg("control", "selfkilled");
-  }
-  else if (key == 'l')
-  {
-    m_pChat->SayChat("/list");
-  }
-  else
-  {
-    // dbg_msg("control", "KEYPRESSED %c", key);
-  }
+	if (key == 'a')
+	{
+		g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 0 : -1;
+	}
+	else if (key == 'd')
+	{
+		g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == 1 ? 0 : 1;
+	}
+	else if (key == ' ')
+	{
+		g_Config.m_ClChillerJmp = 10; // jump 10 ticks
+	}
+	else if (key == 'k')
+	{
+		SendKill(-1);
+		dbg_msg("control", "selfkilled");
+	}
+	else if (key == 'l')
+	{
+		m_pChat->SayChat("/list");
+	}
+	else if (key == 'v') // view / verbose
+	{
+		// todo
+	}
+	else
+	{
+		// dbg_msg("control", "KEYPRESSED %c", key);
+	}
 
 	// update the local character and spectate position
 	UpdatePositions();

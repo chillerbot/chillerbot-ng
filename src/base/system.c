@@ -240,7 +240,9 @@ void dbg_logger(DBG_LOGGER logger, DBG_LOGGER_FINISH finish, void *user)
 
 void dbg_logger_stdout()
 {
-  return; // no output
+	if (1)
+		return; // no output
+
 #if defined(CONF_FAMILY_WINDOWS)
 	dbg_logger(logger_stdout_sync, 0, 0);
 #else
