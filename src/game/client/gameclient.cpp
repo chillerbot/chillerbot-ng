@@ -641,7 +641,7 @@ void CGameClient::ConsoleKeyInput()
 	{
 		m_ThreadChatting = THREAD_CHAT_READY;
 		// printf("your msg from thread: %s\n", m_aThreadChatBuf);
-		m_pChat->SayChat(m_aThreadChatBuf);
+		m_pChat->Say(0, m_aThreadChatBuf);
 	}
 }
 

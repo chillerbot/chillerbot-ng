@@ -1551,7 +1551,7 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
 		str_copy(aFrame[i], "                               ", sizeof(aFrame[i]));
 	}
 	int rendered_tiles = 0;
-	dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
+	// dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
 	Scale = 1.0; // chillerbot tile size is always one character
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	int render_dist = 16; // render tiles surroundign the tee
@@ -1559,7 +1559,7 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
 	ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) - (render_dist / 2);
 	ScreenX1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f) + (render_dist);
 	ScreenY1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f) + (render_dist / 2);
-	dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+	// dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 
 	// calculate the final pixelsize for the tiles
 	float TilePixelSize = 1024/32.0f;
@@ -1670,13 +1670,13 @@ void CMapLayers::RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Co
 						y2 = y1;
 						y1 = Tmp;
 					}
-					dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
+					// dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
 					int renderX = (x*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
 					int renderY = (y*Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
-					dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
+					// dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
 					renderX += 32;
 					renderY += 16;
-					dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
+					// dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
 					if (renderX > 0 && renderX < 64 && renderY > 0 && renderY < 32)
 					{
 						aFrame[renderY][renderX] = '#';
