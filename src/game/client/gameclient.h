@@ -380,8 +380,13 @@ public:
 private:
 	bool m_DDRaceMsgSent[2];
 	int m_ShowOthers[2];
+
+	// chillerbot-ng
+	void ConsoleKeyInput();
 };
 
+// chillerbot-ng class less thread stuff
+void ConsoleKeyInputThread(void *pArg);
 
 inline float HueToRgb(float v1, float v2, float h)
 {

@@ -47,7 +47,7 @@ void CDebugHud::RenderNetCorrections()
       static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f,
       static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f,
       g_Config.m_ClChillerDir);
-  dbg_msg("debughud", aBuf);
+	// dbg_msg("debughud", aBuf);
 }
 
 void CDebugHud::RenderTuning()

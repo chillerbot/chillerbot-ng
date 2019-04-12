@@ -574,9 +574,23 @@ static void Evolve(CNetObj_Character *pCharacter, int Tick)
 	TempCore.Write(pCharacter);
 }
 
-void CGameClient::OnRender()
+int m_ThreadChatting;
+char m_aThreadChatBuf[2048];
+enum {
+	THREAD_CHAT_READY,
+	THREAD_CHAT_BLOCK,
+	THREAD_CHAT_DONE
+};
+
+void ConsoleKeyInputThread(void *pArg)
 {
-  char key = '0';
+	fgets(m_aThreadChatBuf, sizeof(m_aThreadChatBuf), stdin);
+	m_ThreadChatting = THREAD_CHAT_DONE;
+}
+
+void CGameClient::ConsoleKeyInput()
+{
+	char key = '0';
 #if defined(CONF_FAMILY_UNIX)
 		key = getchar();
 #endif
@@ -610,10 +624,31 @@ void CGameClient::OnRender()
 	{
 		g_Config.m_ClChillerRender = g_Config.m_ClChillerRender ? 0 : 1;
 	}
+	else if (key == 't')
+	{
+		if (m_ThreadChatting == THREAD_CHAT_READY)
+		{
+			m_ThreadChatting = THREAD_CHAT_BLOCK;
+			void *pt = thread_init(*ConsoleKeyInputThread, NULL);
+		}
+	}
 	else
 	{
 		// dbg_msg("control", "KEYPRESSED %c", key);
 	}
+
+	if (m_ThreadChatting == THREAD_CHAT_DONE)
+	{
+		m_ThreadChatting = THREAD_CHAT_READY;
+		// printf("your msg from thread: %s\n", m_aThreadChatBuf);
+		m_pChat->SayChat(m_aThreadChatBuf);
+	}
+}
+
+void CGameClient::OnRender()
+{
+	// chillerbot-ng
+	ConsoleKeyInput();
 
 	// update the local character and spectate position
 	UpdatePositions();
