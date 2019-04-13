@@ -1481,6 +1481,7 @@ foreach(target ${TARGETS_LINK})
     #   "___isOSVersionAtLeast", referenced from:
     #       _singleipconnect in libcurl.a(libcurl_la-connect.o)
     target_link_libraries(${target} -Wl,-undefined -Wl,dynamic_lookup)
+    target_link_libraries(${target} -lcurses)
   endif()
   if((MINGW OR TARGET_OS STREQUAL "linux") AND PREFER_BUNDLED_LIBS)
     # Statically link the standard libraries with on MinGW/Linux so we don't

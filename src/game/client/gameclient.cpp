@@ -63,6 +63,11 @@
 	#include <conio.h>
 #endif // _WIN32
 
+// chillerbot-ng keypresses
+#if defined(CONF_PLATFORM_MACOSX)
+#include <curses.h>
+#endif
+
 CGameClient g_GameClient;
 
 // instantiate all systems
@@ -277,6 +282,12 @@ void CGameClient::OnInit()
 
 #if defined(__ANDROID__)
 	m_pMapimages->OnMapLoad(); // Reload map textures on Android
+#endif
+
+	// chillerbot-ng try to fix macOS keypresses
+#if defined(CONF_PLATFORM_MACOSX)
+	// initscr();
+	// system("stty -icanon time 0 min 0");
 #endif
 
 	for(int i = 0; i < m_All.m_Num; i++)
@@ -591,10 +602,11 @@ void ConsoleKeyInputThread(void *pArg)
 void CGameClient::ConsoleKeyInput()
 {
 	char key = '0';
-#if defined(CONF_FAMILY_UNIX)
+#if defined(CONF_PLATFORM_MACOSX)
+		key = getch();
+#elif defined(CONF_FAMILY_UNIX)
 		key = getchar();
-#endif
-#ifdef _WIN32
+#elif defined _WIN32
 		if (_kbhit() == 1)
 			key = getch();
 #endif
