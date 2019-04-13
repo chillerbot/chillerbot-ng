@@ -12,7 +12,6 @@
 #include <base/vmath.h>
 
 #include <engine/config.h>
-#include <engine/editor.h>
 #include <engine/engine.h>
 #include <engine/friends.h>
 #include <engine/keys.h>
@@ -143,8 +142,6 @@ void CMenus::OnRender()
 {
 
 }
-
-static int gs_TextureBlob = -1;
 
 void CMenus::RenderBackground()
 {
