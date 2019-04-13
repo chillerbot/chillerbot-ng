@@ -271,9 +271,6 @@ void CGameClient::OnInit()
 	for(int i = 0; i < NUM_NETOBJTYPES; i++)
 		Client()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	// load default font
-	const char *pFontFile = "fonts/DejaVuSansCJKName.ttf";
-
 	// init all components
 	for(int i = m_All.m_Num-1; i >= 0; --i)
 		m_All.m_paComponents[i]->OnInit();
@@ -595,7 +592,9 @@ enum {
 
 void ConsoleKeyInputThread(void *pArg)
 {
-	fgets(m_aThreadChatBuf, sizeof(m_aThreadChatBuf), stdin);
+	char *pS = fgets(m_aThreadChatBuf, sizeof(m_aThreadChatBuf), stdin);
+	if (pS)
+		printf("[chillerbot-ng] fgets failed error=%s\n", pS);
 	m_ThreadChatting = THREAD_CHAT_DONE;
 }
 
@@ -641,7 +640,7 @@ void CGameClient::ConsoleKeyInput()
 		if (m_ThreadChatting == THREAD_CHAT_READY)
 		{
 			m_ThreadChatting = THREAD_CHAT_BLOCK;
-			void *pt = thread_init(*ConsoleKeyInputThread, NULL);
+			thread_init(*ConsoleKeyInputThread, NULL);
 		}
 	}
 	else
@@ -1016,7 +1015,6 @@ void CGameClient::ProcessEvents()
 		}
 		else if(Item.m_Type == NETEVENTTYPE_SOUNDWORLD)
 		{
-			CNetEvent_SoundWorld *ev = (CNetEvent_SoundWorld *)pData;
 		}
 	}
 }
@@ -1744,8 +1742,8 @@ void CGameClient::OnPredict()
 
 			if(m_Snap.m_LocalClientID != -1 && World.m_apCharacters[m_Snap.m_LocalClientID])
 			{
-				vec2 Pos = World.m_apCharacters[m_Snap.m_LocalClientID]->m_Pos;
-				int Events = World.m_apCharacters[m_Snap.m_LocalClientID]->m_TriggeredEvents;
+				// vec2 Pos = World.m_apCharacters[m_Snap.m_LocalClientID]->m_Pos;
+				// int Events = World.m_apCharacters[m_Snap.m_LocalClientID]->m_TriggeredEvents;
 
 				/*if(events&COREEVENT_AIR_JUMP)
 				{
