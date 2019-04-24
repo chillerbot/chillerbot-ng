@@ -580,32 +580,44 @@ static void Evolve(CNetObj_Character *pCharacter, int Tick)
 	TempCore.Write(pCharacter);
 }
 
-int m_ThreadChatting;
-char m_aThreadChatBuf[2048];
+int m_ThreadInpState;
+bool SaneTTY = true;
+char m_aThreadInputBuf[2048];
 enum {
-	THREAD_CHAT_READY,
-	THREAD_CHAT_BLOCK,
-	THREAD_CHAT_DONE
+	THREAD_INPUT_READY,
+	THREAD_INPUT_BLOCK,
+	THREAD_INPUT_DONE
 };
 
 void ConsoleKeyInputThread(void *pArg)
 {
-	char *pS = fgets(m_aThreadChatBuf, sizeof(m_aThreadChatBuf), stdin);
-	if (pS)
-		printf("[chillerbot-ng] fgets failed error=%s\n", pS);
-	m_ThreadChatting = THREAD_CHAT_DONE;
+#if defined(CONF_FAMILY_UNIX)
+	system("stty sane");
+#endif
+	m_aThreadInputBuf[0] = 0;
+	fgets(m_aThreadInputBuf, sizeof(m_aThreadInputBuf), stdin);
+	m_ThreadInpState = THREAD_INPUT_DONE;
+	SaneTTY = true;
 }
 
 void CGameClient::ConsoleKeyInput()
 {
+	if (m_ThreadInpState == THREAD_INPUT_BLOCK)
+		return;
+
 	char key = '0';
 #if defined(CONF_PLATFORM_MACOSX)
-		key = getch();
+	key = getch();
 #elif defined(CONF_FAMILY_UNIX)
-		key = getchar();
+	if (SaneTTY)
+	{
+		system("stty -icanon time 1 min 0"); // make sure to never get stuck on getchar()
+		SaneTTY = false;
+	}
+	key = getchar();
 #elif defined _WIN32
-		if (_kbhit() == 1)
-			key = getch();
+	if (_kbhit() == 1)
+		key = getch();
 #endif
 
 	if (key == 'a')
@@ -635,22 +647,24 @@ void CGameClient::ConsoleKeyInput()
 	}
 	else if (key == 't')
 	{
-		if (m_ThreadChatting == THREAD_CHAT_READY)
+		if (m_ThreadInpState == THREAD_INPUT_READY)
 		{
-			m_ThreadChatting = THREAD_CHAT_BLOCK;
+			m_ThreadInpState = THREAD_INPUT_BLOCK;
 			thread_init(*ConsoleKeyInputThread, NULL);
 		}
+		else
+			printf("ERROR: chat thread already running.\n");
 	}
 	else
 	{
 		// dbg_msg("control", "KEYPRESSED %c", key);
 	}
 
-	if (m_ThreadChatting == THREAD_CHAT_DONE)
+	if (m_ThreadInpState == THREAD_INPUT_DONE)
 	{
-		m_ThreadChatting = THREAD_CHAT_READY;
-		// printf("your msg from thread: %s\n", m_aThreadChatBuf);
-		m_pChat->Say(0, m_aThreadChatBuf);
+		m_ThreadInpState = THREAD_INPUT_READY;
+		m_pChat->Say(0, m_aThreadInputBuf);
+		// printf("your msg from thread: %s\n", m_aThreadInputBuf);
 	}
 }
 

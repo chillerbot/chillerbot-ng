@@ -2675,16 +2675,6 @@ void CClient::Run()
 	int64 LastTime = time_get_microseconds();
 	int64 LastRenderTime = time_get();
 
-#if defined(CONF_FAMILY_UNIX)
-	static struct termios origtc, newtc;
-	tcgetattr(0, &origtc);                         // get orig tty settings
-	newtc = origtc;                                // copy them
-	newtc.c_lflag &= ~ICANON;                      // put in '1 key mode'
-	newtc.c_lflag &= ~ECHO;                        // turn off echo
-	system("stty -icanon time 1 min 0");
-#endif
-
-
 	while(1)
 	{
 		set_new_tick();
