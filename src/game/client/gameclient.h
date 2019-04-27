@@ -383,6 +383,15 @@ private:
 
 	// chillerbot-ng
 	void ConsoleKeyInput();
+	void StartInputThread(int mode);
+	int m_InputMode;
+
+	enum {
+		INPUT_CHAT,
+		INPUT_LOCAL_CONSOLE,
+		INPUT_RCON_CONSOLE,
+		INPUT_CHILLER_CONSOLE
+	};
 };
 
 // chillerbot-ng class less thread stuff

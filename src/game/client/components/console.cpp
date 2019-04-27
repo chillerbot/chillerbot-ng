@@ -283,6 +283,7 @@ void CGameConsole::CInstance::PrintLine(const char *pLine, bool Highlighted)
 	pEntry->m_Highlighted = Highlighted;
 	mem_copy(pEntry->m_aText, pLine, Len);
 	pEntry->m_aText[Len] = 0;
+	dbg_msg("console-ng", pLine); // TODO: print only rcon to not double local
 }
 
 CGameConsole::CGameConsole()

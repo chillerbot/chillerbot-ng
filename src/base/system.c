@@ -3214,6 +3214,12 @@ int secure_rand()
 	return (int)(i%RAND_MAX);
 }
 
+void strip_last_char(char *buffer)
+{
+	for(;*buffer;buffer++);
+	*--buffer = '\0';
+}
+
 #if defined(__cplusplus)
 }
 #endif

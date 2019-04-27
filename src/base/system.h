@@ -1920,6 +1920,12 @@ void secure_random_fill(void *bytes, unsigned length);
 */
 int secure_rand();
 
+/*
+	Function: strip_last_char
+		remove last character from buffer directly
+*/
+void strip_last_char(char *buffer);
+
 #ifdef __cplusplus
 }
 #endif

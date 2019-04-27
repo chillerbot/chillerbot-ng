@@ -589,6 +589,28 @@ enum {
 	THREAD_INPUT_DONE
 };
 
+void CGameClient::StartInputThread(int mode)
+{
+	m_InputMode = mode;
+	if (m_ThreadInpState != THREAD_INPUT_READY)
+	{
+		printf("ERROR: input thread already running.\n");
+		return;
+	}
+	if (m_InputMode == INPUT_RCON_CONSOLE)
+	{
+
+		if (!Client()->RconAuthed())
+			printf("password> ");
+		else
+			printf("rcon> ");
+	}
+	else if (m_InputMode == INPUT_LOCAL_CONSOLE)
+		printf("console> ");
+	m_ThreadInpState = THREAD_INPUT_BLOCK;
+	thread_init(*ConsoleKeyInputThread, NULL);
+}
+
 void ConsoleKeyInputThread(void *pArg)
 {
 #if defined(CONF_FAMILY_UNIX)
@@ -630,12 +652,11 @@ void CGameClient::ConsoleKeyInput()
 	}
 	else if (key == ' ')
 	{
-		g_Config.m_ClChillerJmp = 10; // jump 10 ticks
+		g_Config.m_ClChillerJmp = 5; // jump 5 ticks
 	}
 	else if (key == 'k')
 	{
 		SendKill(-1);
-		dbg_msg("control", "selfkilled");
 	}
 	else if (key == 'l')
 	{
@@ -647,24 +668,34 @@ void CGameClient::ConsoleKeyInput()
 	}
 	else if (key == 't')
 	{
-		if (m_ThreadInpState == THREAD_INPUT_READY)
-		{
-			m_ThreadInpState = THREAD_INPUT_BLOCK;
-			thread_init(*ConsoleKeyInputThread, NULL);
-		}
-		else
-			printf("ERROR: chat thread already running.\n");
+		StartInputThread(INPUT_CHAT);
 	}
-	else
+	else if (key == 'c')
 	{
-		// dbg_msg("control", "KEYPRESSED %c", key);
+		StartInputThread(INPUT_LOCAL_CONSOLE);
+	}
+	else if (key == 'r')
+	{
+		StartInputThread(INPUT_RCON_CONSOLE);
 	}
 
 	if (m_ThreadInpState == THREAD_INPUT_DONE)
 	{
 		m_ThreadInpState = THREAD_INPUT_READY;
-		m_pChat->Say(0, m_aThreadInputBuf);
-		// printf("your msg from thread: %s\n", m_aThreadInputBuf);
+		if (m_InputMode == INPUT_CHAT)
+			m_pChat->Say(0, m_aThreadInputBuf);
+		else if (m_InputMode == INPUT_RCON_CONSOLE)
+		{
+			strip_last_char(m_aThreadInputBuf);
+			if (!Client()->RconAuthed())
+				Client()->RconAuth(m_aThreadInputBuf, m_aThreadInputBuf);
+			else
+				Client()->Rcon(m_aThreadInputBuf);
+		}
+		else if (m_InputMode == INPUT_LOCAL_CONSOLE)
+			Console()->ExecuteLine(m_aThreadInputBuf);
+		else
+			printf("invalid input mode %d your msg from thread: %s\n", m_InputMode, m_aThreadInputBuf);
 	}
 }
 
