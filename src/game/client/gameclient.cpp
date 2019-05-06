@@ -624,6 +624,30 @@ void ConsoleKeyInputThread(void *pArg)
 	SaneTTY = true;
 }
 
+void CGameClient::ShowServerList()
+{
+	int j = 0;
+	for (int i = 0;; i++)
+	{
+		const CServerInfo *pInfo = m_pServerBrowser->SortedGet(i);
+		if (!pInfo)
+		{
+			if (!i)
+				printf("press 'l' to load/refresh server browser first.\n");
+			return;
+		}
+
+		j++;
+		if (j > 20)
+			return;
+
+		char aPlayers[10];
+		str_format(aPlayers, sizeof(aPlayers), "[%d/%d]", pInfo->m_NumClients, pInfo->m_MaxClients);
+		printf("%-64s %-10s [%s]\n", pInfo->m_aName, aPlayers, pInfo->m_aAddress);
+	}
+}
+
+
 void CGameClient::ChillerCommands(const char *pCmd)
 {
 	if (!str_comp_nocase("help", pCmd))
@@ -663,7 +687,11 @@ void CGameClient::ConsoleKeyInput()
 	else if (key == 'k')
 		SendKill(-1);
 	else if (key == 'l')
-		m_pChat->SayChat("/list");
+		m_pServerBrowser->Refresh(1); // 1 = TYPE_INTERNET
+	else if (key == 'b')
+		ShowServerList();
+	else if (key == 'x')
+		m_pChat->SayChat("xd");
 	else if (key == 'v') // view
 		g_Config.m_ClChillerRender = g_Config.m_ClChillerRender ? 0 : 1;
 	else if (key == 't')

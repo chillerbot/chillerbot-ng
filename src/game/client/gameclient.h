@@ -385,6 +385,7 @@ private:
 	void ConsoleKeyInput();
 	void StartInputThread(int mode);
 	void ChillerCommands(const char *pCmd);
+	void ShowServerList();
 	int m_InputMode;
 
 	enum {
