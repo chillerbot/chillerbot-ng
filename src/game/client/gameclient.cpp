@@ -607,6 +607,8 @@ void CGameClient::StartInputThread(int mode)
 	}
 	else if (m_InputMode == INPUT_LOCAL_CONSOLE)
 		printf("console> ");
+	else if (m_InputMode == INPUT_CHILLER_CONSOLE)
+		printf(":");
 	m_ThreadInpState = THREAD_INPUT_BLOCK;
 	thread_init(*ConsoleKeyInputThread, NULL);
 }
@@ -620,6 +622,16 @@ void ConsoleKeyInputThread(void *pArg)
 	fgets(m_aThreadInputBuf, sizeof(m_aThreadInputBuf), stdin);
 	m_ThreadInpState = THREAD_INPUT_DONE;
 	SaneTTY = true;
+}
+
+void CGameClient::ChillerCommands(const char *pCmd)
+{
+	if (!str_comp_nocase("help", pCmd))
+		printf(":q to quit\n");
+	else if (!str_comp_nocase("q", pCmd) || !str_comp_nocase("quit", pCmd))
+		m_pClient->Quit();
+	else
+		printf("unkown png cmd try :help\n");
 }
 
 void CGameClient::ConsoleKeyInput()
@@ -660,6 +672,8 @@ void CGameClient::ConsoleKeyInput()
 		StartInputThread(INPUT_LOCAL_CONSOLE);
 	else if (key == 'r')
 		StartInputThread(INPUT_RCON_CONSOLE);
+	else if (key == ':')
+		StartInputThread(INPUT_CHILLER_CONSOLE);
 	else if (key != 48) // empty key
 		printf("key %d not found\n", key);
 
@@ -678,6 +692,8 @@ void CGameClient::ConsoleKeyInput()
 		}
 		else if (m_InputMode == INPUT_LOCAL_CONSOLE)
 			Console()->ExecuteLine(m_aThreadInputBuf);
+		else if (m_InputMode == INPUT_CHILLER_CONSOLE)
+			ChillerCommands(m_aThreadInputBuf);
 		else
 			printf("invalid input mode %d your msg from thread: %s\n", m_InputMode, m_aThreadInputBuf);
 	}

@@ -384,6 +384,7 @@ private:
 	// chillerbot-ng
 	void ConsoleKeyInput();
 	void StartInputThread(int mode);
+	void ChillerCommands(const char *pCmd);
 	int m_InputMode;
 
 	enum {
