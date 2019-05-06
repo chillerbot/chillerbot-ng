@@ -690,6 +690,8 @@ void CGameClient::ConsoleKeyInput()
 		m_pServerBrowser->Refresh(1); // 1 = TYPE_INTERNET
 	else if (key == 'b')
 		ShowServerList();
+	else if (key == 9)
+		m_pScoreboard->DoChillerRender();
 	else if (key == 'x')
 		m_pChat->SayChat("xd");
 	else if (key == 'v') // view

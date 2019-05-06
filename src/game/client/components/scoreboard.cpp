@@ -196,6 +196,8 @@ void CScoreboard::RenderScoreboard(float x, float y, float w, int Team, const ch
 
 	int OldDDTeam = -1;
 
+	// score board
+	printf("+------[ %-*s ]------+\n", 11, pTitle);
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		// make sure that we render the correct team
@@ -259,7 +261,9 @@ void CScoreboard::RenderScoreboard(float x, float y, float w, int Team, const ch
 				str_format(aId, sizeof(aId)," %d: ", pInfo->m_ClientID);
 			str_append(aId, m_pClient->m_aClients[pInfo->m_ClientID].m_aName,sizeof(aId));
 		}
+		printf("|%-*d|%-*s| %-*s|\n", 2, pInfo->m_ClientID, 5, aBuf, 17, m_pClient->m_aClients[pInfo->m_ClientID].m_aName);
 	}
+	printf("+---------------------------+\n");
 }
 
 void CScoreboard::RenderRecordingNotification(float x)
@@ -299,8 +303,15 @@ void CScoreboard::RenderRecordingNotification(float x)
 
 void CScoreboard::OnRender()
 {
-	if(!Active())
-		return;
+	// moved content to DoChillerRender becauase of components magic
+}
+
+void CScoreboard::DoChillerRender()
+{
+	CServerInfo Info;
+
+	Client()->GetServerInfo(&Info);
+	m_IsGameTypeRace = IsRace(&Info);
 
 	// if the score board is active, then we should clear the motd message as well
 	if(m_pClient->m_pMotd->IsActive())
