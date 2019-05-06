@@ -682,11 +682,11 @@ void CGameClient::ConsoleKeyInput()
 	if (m_ThreadInpState == THREAD_INPUT_DONE)
 	{
 		m_ThreadInpState = THREAD_INPUT_READY;
+		strip_last_char(m_aThreadInputBuf);
 		if (m_InputMode == INPUT_CHAT)
 			m_pChat->Say(0, m_aThreadInputBuf);
 		else if (m_InputMode == INPUT_RCON_CONSOLE)
 		{
-			strip_last_char(m_aThreadInputBuf);
 			if (!Client()->RconAuthed())
 				Client()->RconAuth(m_aThreadInputBuf, m_aThreadInputBuf);
 			else
