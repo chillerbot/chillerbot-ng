@@ -643,41 +643,25 @@ void CGameClient::ConsoleKeyInput()
 #endif
 
 	if (key == 'a')
-	{
 		g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == -1 ? 0 : -1;
-	}
 	else if (key == 'd')
-	{
 		g_Config.m_ClChillerDir = g_Config.m_ClChillerDir == 1 ? 0 : 1;
-	}
 	else if (key == ' ')
-	{
 		g_Config.m_ClChillerJmp = 5; // jump 5 ticks
-	}
 	else if (key == 'k')
-	{
 		SendKill(-1);
-	}
 	else if (key == 'l')
-	{
 		m_pChat->SayChat("/list");
-	}
 	else if (key == 'v') // view
-	{
 		g_Config.m_ClChillerRender = g_Config.m_ClChillerRender ? 0 : 1;
-	}
 	else if (key == 't')
-	{
 		StartInputThread(INPUT_CHAT);
-	}
 	else if (key == 'c')
-	{
 		StartInputThread(INPUT_LOCAL_CONSOLE);
-	}
 	else if (key == 'r')
-	{
 		StartInputThread(INPUT_RCON_CONSOLE);
-	}
+	else if (key != 48) // empty key
+		printf("key %d not found\n", key);
 
 	if (m_ThreadInpState == THREAD_INPUT_DONE)
 	{
