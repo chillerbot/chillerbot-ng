@@ -700,7 +700,6 @@ void CGameClient::PenetrateServer()
 	};
 	m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
 	int r = rand() % 10;
-	printf("rand=%d\n", r);
 	if (r == 2)
 		SendKill(-1);
 	if (r == 1)
@@ -724,6 +723,8 @@ void CGameClient::ChillerCommands(const char *pCmd)
 
 void CGameClient::ConsoleKeyInput()
 {
+	if (g_Config.m_ClChillerNoInput)
+		return;
 	if (m_ThreadInpState == THREAD_INPUT_BLOCK)
 		return;
 
