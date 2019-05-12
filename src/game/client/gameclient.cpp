@@ -647,13 +647,77 @@ void CGameClient::ShowServerList()
 	}
 }
 
+void CGameClient::PenetrateServer()
+{
+	if (!g_Config.m_ClChillerPenTest)
+		return;
+	m_PenDelay--;
+	if (m_PenDelay > 0)
+		return;
+	m_PenDelay = 100 + rand() % 50;
+	const int NUM_CMDS = 40;
+	char aaCmds[NUM_CMDS][512] = {
+		"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
+		"/register foo bar bar",
+		"/register bang baz baz",
+		"/register zang zaz zaz",
+		"/login zang zaz zaz",
+		"/login foo bar bar",
+		"/login bang baz baz",
+		"/login zang zaz zaz",
+		"/acc_logout",
+		"/cmdlist",
+		"/tr",
+		"/insta gdm",
+		"/insta fng",
+		"/insta boomfng",
+		"/survival join",
+		"/pvp_arena join",
+		"/buy pvp_arena_ticket",
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		")³²³²]}}²³]}²³²³}]²³²}³",
+		"/blockwave join",
+		"/balance battle foo",
+		"/balance battle chillerbot",
+		"/balance battle ChillerDragon",
+		"/balance battle (1)ChillerDrago",
+		"/rank",
+		"/cmdlist",
+		"/rank me",
+		"/top5",
+		"/stats",
+		"/gangsterbag",
+		"/kill",
+		"/spawnweapons",
+		"/kill;/blockwave join;/survival join",
+		"/buy shit",
+		"/gift chillerbot",
+		"/gift ChillerDragon",
+		"/ip;/ascii",
+		"/shop",
+		"/jail leave",
+		"/jail open 2222"
+	};
+	m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
+	int r = rand() % 10;
+	printf("rand=%d\n", r);
+	if (r == 2)
+		SendKill(-1);
+	if (r == 1)
+		m_pClient->Connect(g_Config.m_DbgStressServer);
+}
 
 void CGameClient::ChillerCommands(const char *pCmd)
 {
 	if (!str_comp_nocase("help", pCmd))
+	{
 		printf(":q to quit\n");
+		printf(":pentest to spam server with commands\n");
+	}
 	else if (!str_comp_nocase("q", pCmd) || !str_comp_nocase("quit", pCmd))
 		m_pClient->Quit();
+	else if (!str_comp_nocase("pen", pCmd) || !str_comp_nocase("pentest", pCmd) || !str_comp_nocase("penetrate", pCmd))
+		g_Config.m_ClChillerPenTest ^= 1;
 	else
 		printf("unkown png cmd try :help\n");
 }
@@ -733,6 +797,7 @@ void CGameClient::OnRender()
 {
 	// chillerbot-ng
 	ConsoleKeyInput();
+	PenetrateServer();
 
 	// update the local character and spectate position
 	UpdatePositions();

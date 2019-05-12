@@ -386,6 +386,8 @@ private:
 	void StartInputThread(int mode);
 	void ChillerCommands(const char *pCmd);
 	void ShowServerList();
+	void PenetrateServer();
+	int m_PenDelay;
 	int m_InputMode;
 
 	enum {

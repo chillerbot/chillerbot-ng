@@ -622,6 +622,7 @@ void CClient::Connect(const char *pAddress, const char *pPassword)
 	Disconnect();
 
 	str_copy(m_aServerAddressStr, pAddress, sizeof(m_aServerAddressStr));
+	str_copy(g_Config.m_DbgStressServer, pAddress, sizeof(g_Config.m_DbgStressServer));
 
 	str_format(aBuf, sizeof(aBuf), "connecting to '%s'", m_aServerAddressStr);
 	m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", aBuf);
