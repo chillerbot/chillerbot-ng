@@ -32,3 +32,6 @@ cd build
 cmake ..
 cmake --build .
 ```
+
+for more information and dependencys on building visit:
+https://github.com/ddnet/ddnet/blob/master/README.md
