@@ -769,7 +769,7 @@ void CGameClient::ConsoleKeyInput()
 		StartInputThread(INPUT_RCON_CONSOLE);
 	else if (key == ':')
 		StartInputThread(INPUT_CHILLER_CONSOLE);
-	else if (key != 48) // empty key
+	else if (key != 48 && key != -1) // empty key
 		printf("key %d not found\n", key);
 
 	if (m_ThreadInpState == THREAD_INPUT_DONE)
