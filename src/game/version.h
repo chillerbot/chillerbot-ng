@@ -6,5 +6,6 @@
 #define GAME_NETVERSION "0.6 626fce9a778df4d4"
 #define GAME_RELEASE_VERSION "11.8"
 #define CLIENT_VERSIONNR 11080
+#define CHILLERBOT_VERSION "0001"
 extern const char *GIT_SHORTREV_HASH;
 #endif
