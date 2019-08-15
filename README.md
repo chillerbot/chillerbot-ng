@@ -10,7 +10,7 @@ which is based on DDrace which is a teeworlds mod.
 
 ```
 # non interactive client (can fix input bugs on unsupportet os)
-./chillerbot-ng "cl_chiller_no_inp 1"
+./chillerbot-ng "cl_chiller_inp 0"
 ```
 
 ### Interactive mode keybindings

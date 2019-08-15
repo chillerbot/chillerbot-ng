@@ -723,7 +723,7 @@ void CGameClient::ChillerCommands(const char *pCmd)
 
 void CGameClient::ConsoleKeyInput()
 {
-	if (g_Config.m_ClChillerNoInput)
+	if (g_Config.m_ClChillerInput)
 		return;
 	if (m_ThreadInpState == THREAD_INPUT_BLOCK)
 		return;
