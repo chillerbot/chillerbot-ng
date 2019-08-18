@@ -290,9 +290,6 @@ if(MYSQL)
 else()
   set(MYSQL_LIBRARIES)
 endif()
-find_package(Ogg)
-find_package(Opus)
-find_package(Opusfile)
 find_package(Pnglite)
 find_package(PythonInterp)
 find_package(Threads)
@@ -351,10 +348,7 @@ endif()
 if(MYSQL)
   show_dependency_status("MySQL" MYSQL)
 endif()
-show_dependency_status("Ogg" OGG)
 show_dependency_status("OpenSSL Crypto" CRYPTO)
-show_dependency_status("Opus" OPUS)
-show_dependency_status("Opusfile" OPUSFILE)
 show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Wavpack" WAVPACK)
@@ -380,15 +374,6 @@ endif()
 
 if(CLIENT AND NOT(FREETYPE_FOUND))
   message(SEND_ERROR "You must install Freetype to compile the DDNet client")
-endif()
-if(CLIENT AND NOT(OGG_FOUND))
-  message(SEND_ERROR "You must install Ogg to compile the DDNet client")
-endif()
-if(CLIENT AND NOT(OPUS_FOUND))
-  message(SEND_ERROR "You must install Opus to compile the DDNet client")
-endif()
-if(CLIENT AND NOT(OPUSFILE_FOUND))
-  message(SEND_ERROR "You must install Opusfile to compile the DDNet client")
 endif()
 if(NOT(GTEST_FOUND))
   if(DOWNLOAD_GTEST)
@@ -503,7 +488,6 @@ file(COPY data DESTINATION .)
 set(COPY_FILES
   ${CURL_COPY_FILES}
   ${FREETYPE_COPY_FILES}
-  ${OPUSFILE_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
 
@@ -853,11 +837,6 @@ if(CLIENT)
     ${PNGLITE_LIBRARIES}
     ${WAVPACK_LIBRARIES}
 
-    # Order of these three is important.
-    ${OPUSFILE_LIBRARIES}
-    ${OPUS_LIBRARIES}
-    ${OGG_LIBRARIES}
-
     ${PLATFORM_CLIENT_LIBS}
 
     # Add pthreads (on non-Windows) at the end, so that other libraries can depend
@@ -893,9 +872,6 @@ if(CLIENT)
     ${CURL_INCLUDE_DIRS}
     ${FREETYPE_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
-    ${OGG_INCLUDE_DIRS}
-    ${OPUSFILE_INCLUDE_DIRS}
-    ${OPUS_INCLUDE_DIRS}
     ${PNGLITE_INCLUDE_DIRS}
     ${WAVPACK_INCLUDE_DIRS}
   )
