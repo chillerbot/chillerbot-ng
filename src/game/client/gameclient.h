@@ -387,6 +387,7 @@ private:
 	void ChillerCommands(const char *pCmd);
 	void ShowServerList();
 	void PenetrateServer();
+	const char *GetPentestCommand(const char *pFileName);
 	int m_PenDelay;
 	int m_InputMode;
 

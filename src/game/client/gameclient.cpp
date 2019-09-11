@@ -12,6 +12,7 @@
 #include <engine/updater.h>
 #include <engine/shared/demo.h>
 #include <engine/shared/config.h>
+#include <engine/shared/linereader.h>
 
 #include <game/generated/protocol.h>
 #include <game/generated/client_data.h>
@@ -649,61 +650,54 @@ void CGameClient::ShowServerList()
 
 void CGameClient::PenetrateServer()
 {
-	if (!g_Config.m_ClChillerPenTest)
+	if (!g_Config.m_ClPenTest)
 		return;
 	m_PenDelay--;
 	if (m_PenDelay > 0)
 		return;
 	m_PenDelay = 100 + rand() % 50;
-	const int NUM_CMDS = 40;
-	char aaCmds[NUM_CMDS][512] = {
-		"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
-		"/register foo bar bar",
-		"/register bang baz baz",
-		"/register zang zaz zaz",
-		"/login zang zaz zaz",
-		"/login foo bar bar",
-		"/login bang baz baz",
-		"/login zang zaz zaz",
-		"/acc_logout",
-		"/cmdlist",
-		"/tr",
-		"/insta gdm",
-		"/insta fng",
-		"/insta boomfng",
-		"/survival join",
-		"/pvp_arena join",
-		"/buy pvp_arena_ticket",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		")³²³²]}}²³]}²³²³}]²³²}³",
-		"/blockwave join",
-		"/balance battle foo",
-		"/balance battle chillerbot",
-		"/balance battle ChillerDragon",
-		"/balance battle (1)ChillerDrago",
-		"/rank",
-		"/cmdlist",
-		"/rank me",
-		"/top5",
-		"/stats",
-		"/gangsterbag",
-		"/kill",
-		"/spawnweapons",
-		"/kill;/blockwave join;/survival join",
-		"/buy shit",
-		"/gift chillerbot",
-		"/gift ChillerDragon",
-		"/ip;/ascii",
-		"/shop",
-		"/jail leave",
-		"/jail open 2222"
-	};
-	m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
-	int r = rand() % 10;
+
+	// chat messages
+	const char *pMessage = GetPentestCommand(g_Config.m_ClPenTestFile);
+	if (pMessage)
+	{
+		m_pChat->SayChat(pMessage);
+	}
+	else
+	{
+		const int NUM_CMDS = 3;
+		char aaCmds[NUM_CMDS][512] = {
+			"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
+			"todo: configure me ( pentest file not found)",
+			"/login bang baz baz"
+		};
+		m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
+	}
+
+	// kill and reconnect
+	int r = rand() % 50;
 	if (r == 2)
 		SendKill(-1);
 	if (r == 1)
 		m_pClient->Connect(g_Config.m_DbgStressServer);
+}
+
+const char *CGameClient::GetPentestCommand(char const *pFileName)
+{
+	IOHANDLE File = m_pStorage->OpenFile(pFileName, IOFLAG_READ, IStorage::TYPE_ALL);
+	if(!File)
+		return 0;
+
+	std::vector<char*> v;
+	char *pLine;
+	CLineReader *lr = new CLineReader();
+	lr->Init(File);
+	while((pLine = lr->Get()))
+		if(str_length(pLine))
+			if(pLine[0]!='#')
+				v.push_back(pLine);
+	io_close(File);
+	return v[rand() % v.size()];
 }
 
 void CGameClient::ChillerCommands(const char *pCmd)
@@ -716,7 +710,7 @@ void CGameClient::ChillerCommands(const char *pCmd)
 	else if (!str_comp_nocase("q", pCmd) || !str_comp_nocase("quit", pCmd))
 		m_pClient->Quit();
 	else if (!str_comp_nocase("pen", pCmd) || !str_comp_nocase("pentest", pCmd) || !str_comp_nocase("penetrate", pCmd))
-		g_Config.m_ClChillerPenTest ^= 1;
+		g_Config.m_ClPenTest ^= 1;
 	else
 		printf("unkown png cmd try :help\n");
 }

@@ -273,7 +273,7 @@ int CControls::SnapInput(int *pData)
 		}
 
 		// stress testing
-		if(g_Config.m_ClChillerPenTest)
+		if(g_Config.m_ClPenTest)
 		{
 			float t = Client()->LocalTime();
 			mem_zero(&m_InputData[g_Config.m_ClDummy], sizeof(m_InputData[0]));

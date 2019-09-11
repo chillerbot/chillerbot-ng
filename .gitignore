@@ -101,3 +101,7 @@ cscope.out
 *.vcxproj
 *.vs
 *.zip
+
+# chillerbot-ng
+
+pentest.txt
