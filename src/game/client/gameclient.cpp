@@ -697,7 +697,14 @@ const char *CGameClient::GetPentestCommand(char const *pFileName)
 			if(pLine[0]!='#')
 				v.push_back(pLine);
 	io_close(File);
-	return v[rand() % v.size()];
+	static const char *pCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"§$%&/()=?{[]}\\<>|-.,;:+#*'~'@_/";
+	char *pMessage = v[rand() % v.size()];
+	for(int i = 0; pMessage[i] != 0; i++)
+	{
+		if(pMessage[i] == '?')
+			pMessage[i] = pCharset[rand() % strlen(pCharset)];
+	}
+	return pMessage;
 }
 
 void CGameClient::ChillerCommands(const char *pCmd)
