@@ -19,13 +19,14 @@ This client is able to test the stability of servers by acting as a active playe
 Create a file called ``pentest.txt`` in the same directory as the client or set a own path ``cl_pentest_file mypentest.txt``.
 If the client is in pentest mode it will send random lines from the file and replace all ``?`` with a random character.
 
-
 A sample ``pentest.txt`` might look like this:
 ```
 testing chat!
 /register foo bar baz
 /login ??? ???
 ```
+
+The client sends a chat message every x seconds which has a 50% chance to be one provided in pentest.txt otherwise it is a parsed command from cmdlist with a random argument.
 
 ```
 # start pentest client and connect to localhost
