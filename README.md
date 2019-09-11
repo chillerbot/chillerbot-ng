@@ -13,6 +13,25 @@ which is based on DDrace which is a teeworlds mod.
 ./chillerbot-ng "cl_chiller_inp 0"
 ```
 
+### Penetration testing
+
+This client is able to test the stability of servers by acting as a active player.
+Create a file called ``pentest.txt`` in the same directory as the client or set a own path ``cl_pentest_file mypentest.txt``.
+If the client is in pentest mode it will send random lines from the file and replace all ``?`` with a random character.
+
+
+A sample ``pentest.txt`` might look like this:
+```
+testing chat!
+/register foo bar baz
+/login ??? ???
+```
+
+```
+# start pentest client and connect to localhost
+./chillerbot-ng "cl_chiller_inp 0;connect localhost:8303;cl_pentest 1"
+```
+
 ### Interactive mode keybindings
 - 'A' walk left
 - 'D' walk right
