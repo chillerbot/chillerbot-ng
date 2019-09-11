@@ -652,26 +652,78 @@ void CGameClient::PenetrateServer()
 {
 	if (!g_Config.m_ClPenTest)
 		return;
+
+	if (m_RequestCmdlist < 0) // waiting to send
+	{
+		if (time_get() >= -m_RequestCmdlist)
+		{
+			m_pChat->SayChat("/cmdlist");
+			m_RequestCmdlist = time_get();
+		}
+		// dbg_msg("pentest", "time=%lld req=%lld diff=%lld", time_get(), -m_RequestCmdlist, (-m_RequestCmdlist - time_get()) / time_freq());
+		return;
+	}
+	else if (m_RequestCmdlist)
+	{
+		int64 SecsPassed = -(m_RequestCmdlist - time_get()) / time_freq();
+		// str_format(aBuf, sizeof(aBuf), "sent message %lld secs ago", SecsPassed);
+		// m_pChat->SayChat(aBuf);
+		if (SecsPassed > 1)
+		{
+			char aBuf[2048];
+			str_copy(aBuf, "", sizeof(aBuf));
+			for(std::vector<char*>::size_type i = 0; i != m_vChatCmds.size(); i++)
+			{
+				str_append(aBuf, m_vChatCmds[i], sizeof(aBuf));
+				// dbg_msg("pentest", "append chat cmd=%s", m_vChatCmds[i]);
+			}
+			// m_pChat->SayChat(aBuf);
+			dbg_msg("pentest", "found chat cmds=%s", aBuf);
+			// m_pChat->SayChat("stopped waiting.");
+			m_RequestCmdlist = 0; // finished waiting for response
+		}
+		return;
+	}
+
 	m_PenDelay--;
 	if (m_PenDelay > 0)
 		return;
 	m_PenDelay = 100 + rand() % 50;
 
 	// chat messages
-	const char *pMessage = GetPentestCommand(g_Config.m_ClPenTestFile);
-	if (pMessage)
+	if (rand() % 2) // parsed chat cmds
 	{
-		m_pChat->SayChat(pMessage);
+		char aChatCmd[128];
+		char aArg[64];
+		static const char *pCharset = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"§$%&/()=?{[]}\\<>|-.,;:+#*'~'@_/";
+		str_copy(aArg, "", sizeof(aArg));
+		int len = rand() % 64;
+		for (int i = 0; i < len; i++)
+		{
+			char buf[2];
+			str_format(buf, sizeof(buf), "%c", pCharset[rand() % strlen(pCharset)]);
+			str_append(aArg, buf, sizeof(aArg));
+		}
+		str_format(aChatCmd, sizeof(aChatCmd), "/%s %s", GetRandomChatCommand(), aArg);
+		m_pChat->SayChat(aChatCmd);
 	}
-	else
+	else // file messages
 	{
-		const int NUM_CMDS = 3;
-		char aaCmds[NUM_CMDS][512] = {
-			"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
-			"todo: configure me ( pentest file not found)",
-			"/login bang baz baz"
-		};
-		m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
+		const char *pMessage = GetPentestCommand(g_Config.m_ClPenTestFile);
+		if (pMessage)
+		{
+			m_pChat->SayChat(pMessage);
+		}
+		else
+		{
+			const int NUM_CMDS = 3;
+			char aaCmds[NUM_CMDS][512] = {
+				"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
+				"todo: configure me ( pentest file not found)",
+				"/login bang baz baz"
+			};
+			m_pChat->SayChat(aaCmds[rand() % NUM_CMDS]);
+		}
 	}
 
 	// kill and reconnect
@@ -680,6 +732,13 @@ void CGameClient::PenetrateServer()
 		SendKill(-1);
 	if (r == 1)
 		m_pClient->Connect(g_Config.m_DbgStressServer);
+}
+
+const char *CGameClient::GetRandomChatCommand()
+{
+	if (!m_vChatCmds.size())
+		return 0;
+	return m_vChatCmds[rand() % m_vChatCmds.size()];
 }
 
 const char *CGameClient::GetPentestCommand(char const *pFileName)
@@ -1066,6 +1125,7 @@ void CGameClient::OnShutdown()
 void CGameClient::OnEnterGame()
 {
 	g_GameClient.m_pEffects->ResetDamageIndicator();
+	m_RequestCmdlist = -(time_get() + time_freq() * 5); // wait a few seconds before requesting it
 }
 
 void CGameClient::OnGameOver()

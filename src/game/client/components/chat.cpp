@@ -140,8 +140,9 @@ void CChat::EnableMode(int Team)
   return;
 }
 
-void CChat::ChillerbotMessage(const char *pMsg)
+void CChat::ChillerbotMessage(const char *pMsg, int ClientID)
 {
+	char aBuf[2048];
 	if(str_find_nocase(pMsg, "bot?") ||
 		str_find_nocase(pMsg, "info();") ||
 		str_find_nocase(pMsg, "version();") ||
@@ -149,13 +150,32 @@ void CChat::ChillerbotMessage(const char *pMsg)
 		str_find_nocase(pMsg, "!help") ||
 		str_find_nocase(pMsg, "!info"))
 	{
-		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "[chillerbot-ng] chillerbot.png headless (v%s)", CHILLERBOT_VERSION);
 		Say(0, aBuf);
 	}
 	else if(str_find_nocase(pMsg, "I was a faithful friend from the start. The best friend? No. But I was a faithful friend. From map to map, I helped jao get across hard barriers. We talked and talked, about the future, what teeworlds could hold. We had wonderful moments together, ..."))
 	{
 		Say(0, "... memories that would last a lifetime. Whenever I would see him on a server, a new journey would spark up as we explored the wonders of each map. And now? he won't fucking transfer my points");
+	}
+
+	if(ClientID == -1) // server message
+	{
+		if(m_pClient->m_RequestCmdlist > 0)
+		{
+			// int64 SecsPassed = -(m_pClient->m_RequestCmdlist - time_get()) / time_freq();
+			// str_format(aBuf, sizeof(aBuf), "sent message %lld secs ago", SecsPassed);
+			// Say(0, aBuf);
+			// dbg_msg("pentest", "cmdlist: %s", pMsg);
+			str_copy(aBuf, pMsg, sizeof(aBuf));
+			char aToken[64];
+			for(const char *tok = aBuf; (tok = str_next_token(tok, ",", aToken, sizeof(aToken)));)
+			{
+				char *pBuf = (char*)malloc(64*sizeof(char));
+				str_copy(pBuf, str_skip_whitespaces(aToken), 64);
+				m_pClient->m_vChatCmds.push_back(pBuf);
+				// dbg_msg("pentest", "found chat command: %s", pBuf);
+			}
+		}
 	}
 }
 
@@ -165,7 +185,7 @@ void CChat::OnMessage(int MsgType, void *pRawMsg)
 	{
 		CNetMsg_Sv_Chat *pMsg = (CNetMsg_Sv_Chat *)pRawMsg;
 		AddLine(pMsg->m_ClientID, pMsg->m_Team, pMsg->m_pMessage);
-		ChillerbotMessage(pMsg->m_pMessage);
+		ChillerbotMessage(pMsg->m_pMessage, pMsg->m_ClientID);
 	}
 }
 

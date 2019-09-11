@@ -103,6 +103,6 @@ public:
 	virtual void OnRelease();
 	virtual void OnMessage(int MsgType, void *pRawMsg);
 	virtual bool OnInput(IInput::CEvent Event);
-	void ChillerbotMessage(const char *pMsg);
+	void ChillerbotMessage(const char *pMsg, int ClientID);
 };
 #endif

@@ -388,6 +388,7 @@ private:
 	void ShowServerList();
 	void PenetrateServer();
 	const char *GetPentestCommand(const char *pFileName);
+	const char *GetRandomChatCommand();
 	int m_PenDelay;
 	int m_InputMode;
 
@@ -397,6 +398,10 @@ private:
 		INPUT_RCON_CONSOLE,
 		INPUT_CHILLER_CONSOLE
 	};
+
+public:
+	std::vector<char*> m_vChatCmds;
+	int64 m_RequestCmdlist;
 };
 
 // chillerbot-ng class less thread stuff
