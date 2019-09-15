@@ -283,7 +283,6 @@ find_package(Freetype)
 if(DOWNLOAD_GTEST)
   find_package(Git)
 endif()
-find_package(GLEW)
 find_package(GTest)
 if(MYSQL)
   find_package(MySQL)
@@ -340,7 +339,6 @@ show_dependency_status("Freetype" FREETYPE)
 if(DOWNLOAD_GTEST)
   show_dependency_status("Git" GIT)
 endif()
-show_dependency_status("Glew" GLEW)
 show_dependency_status("GTest" GTEST)
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   show_dependency_status("Hdiutil" HDIUTIL)
@@ -736,10 +734,6 @@ if(CLIENT)
     input.cpp
     input.h
     keynames.h
-    opengl_sl.cpp
-    opengl_sl.h
-    opengl_sl_program.cpp
-    opengl_sl_program.h
     serverbrowser.cpp
     serverbrowser.h
     updater.cpp
@@ -826,14 +820,13 @@ if(CLIENT)
   )
   set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_GENERATED_CLIENT})
 
-  set(DEPS_CLIENT ${DEPS} ${GLEW_DEP} ${PNGLITE_DEP} ${WAVPACK_DEP})
+  set(DEPS_CLIENT ${DEPS} ${PNGLITE_DEP} ${WAVPACK_DEP})
 
   # Libraries
   set(LIBS_CLIENT
     ${LIBS}
     ${CURL_LIBRARIES}
     ${FREETYPE_LIBRARIES}
-    ${GLEW_LIBRARIES}
     ${PNGLITE_LIBRARIES}
     ${WAVPACK_LIBRARIES}
 
@@ -871,7 +864,6 @@ if(CLIENT)
   target_include_directories(${TARGET_CLIENT} PRIVATE
     ${CURL_INCLUDE_DIRS}
     ${FREETYPE_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
     ${PNGLITE_INCLUDE_DIRS}
     ${WAVPACK_INCLUDE_DIRS}
   )
@@ -1486,7 +1478,6 @@ foreach(target ${TARGETS_OWN})
   target_include_directories(${target} PRIVATE src)
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
   target_include_directories(${target} PRIVATE ${ZLIB_INCLUDE_DIRS})
-  target_compile_definitions(${target} PRIVATE GLEW_STATIC)
   if(CRYPTO_FOUND)
     target_compile_definitions(${target} PRIVATE CONF_OPENSSL)
     target_include_directories(${target} PRIVATE ${CRYPTO_INCLUDE_DIRS})
