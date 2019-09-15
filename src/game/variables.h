@@ -11,6 +11,7 @@ MACRO_CONFIG_INT(ClChillerRender, cl_chiller_render, 0, 0, 1, CFGFLAG_CLIENT, "r
 MACRO_CONFIG_INT(ClChillerInput, cl_chiller_inp, 1, 0, 1, CFGFLAG_CLIENT, "user keyboard input like chat and keypresses (set to 0 if the client seems broken)")
 MACRO_CONFIG_INT(ClPenTest, cl_pentest, 0, 0, 1, CFGFLAG_CLIENT, "penetrate servers to test stability")
 MACRO_CONFIG_STR(ClPenTestFile, cl_pentest_file, 128, "pentest.txt", CFGFLAG_CLIENT, "chat messages file for pentestmode")
+MACRO_CONFIG_STR(ClShutdownSrv, cl_shutdown_srv, 128, "", CFGFLAG_CLIENT, "provide password of rcon to shutdown server after x seconds")
 
 // client
 MACRO_CONFIG_INT(ClPredict, cl_predict, 1, 0, 1, CFGFLAG_CLIENT|CFGFLAG_SAVE, "Predict client movements")

@@ -322,6 +322,11 @@ void CGameClient::OnInit()
 		}
 	}
 
+	// chillerbot-ng
+
+	m_RequestCmdlist = 0;
+	m_EnterGameTime = 0;
+
 	int64 End = time_get();
 	str_format(aBuf, sizeof(aBuf), "initialisation finished after %.2fms", ((End-Start)*1000)/(float)time_freq());
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "gameclient", aBuf);
@@ -854,11 +859,34 @@ void CGameClient::ConsoleKeyInput()
 	}
 }
 
+void CGameClient::ChillerBotTick()
+{
+	ConsoleKeyInput();
+	PenetrateServer();
+	if (g_Config.m_ClShutdownSrv[0] && m_EnterGameTime)
+	{
+		if (!Client()->RconAuthed() && (time_get() - m_EnterGameTime) / time_freq() > 10) // wait 10 sec to authenticate
+		{
+			Client()->RconAuth(g_Config.m_ClShutdownSrv, g_Config.m_ClShutdownSrv);
+			dbg_msg("shutdown", "authed in rcon with password='%s'", g_Config.m_ClShutdownSrv);
+		}
+		if ((time_get() - m_EnterGameTime) / time_freq() > 40) // wait 40 sec to shutdown server
+		{
+			Client()->Rcon("shutdown");
+			g_Config.m_ClShutdownSrv[0] = '\0';
+			dbg_msg("shutdown", "executed shutdown server");
+		}
+		/*
+		if (time_get() % time_freq() == 0)
+			dbg_msg("shutdown", "on server since %lld seconds.", (time_get() - m_EnterGameTime) / time_freq());
+		*/
+	}
+}
+
 void CGameClient::OnRender()
 {
 	// chillerbot-ng
-	ConsoleKeyInput();
-	PenetrateServer();
+	ChillerBotTick();
 
 	// update the local character and spectate position
 	UpdatePositions();
@@ -1126,6 +1154,7 @@ void CGameClient::OnEnterGame()
 {
 	g_GameClient.m_pEffects->ResetDamageIndicator();
 	m_RequestCmdlist = -(time_get() + time_freq() * 5); // wait a few seconds before requesting it
+	m_EnterGameTime = time_get();
 }
 
 void CGameClient::OnGameOver()

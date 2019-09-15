@@ -387,10 +387,12 @@ private:
 	void ChillerCommands(const char *pCmd);
 	void ShowServerList();
 	void PenetrateServer();
+	void ChillerBotTick();
 	const char *GetPentestCommand(const char *pFileName);
 	const char *GetRandomChatCommand();
 	int m_PenDelay;
 	int m_InputMode;
+	int64 m_EnterGameTime;
 
 	enum {
 		INPUT_CHAT,
