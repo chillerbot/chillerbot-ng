@@ -76,8 +76,6 @@ elseif(TARGET_OS STREQUAL "linux")
   set(AUTOUPDATE_DEFAULT ON)
 endif()
 
-option(WEBSOCKETS "Enable websockets support" OFF)
-option(MYSQL "Enable mysql support" OFF)
 option(AUTOUPDATE "Enable the autoupdater" ${AUTOUPDATE_DEFAULT})
 option(CLIENT "Compile client" ON)
 option(DOWNLOAD_GTEST "Download and compile GTest" ${AUTO_DEPENDENCIES_DEFAULT})
@@ -99,7 +97,6 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
   src/game/version.h
 )
 
-set(SERVER_EXECUTABLE DDNet-Server CACHE STRING "Name of the built server executable")
 set(CLIENT_EXECUTABLE chillerbot-ng CACHE STRING "Name of the build client executable")
 
 ########################################################################
@@ -293,12 +290,6 @@ find_package(Pnglite)
 find_package(PythonInterp)
 find_package(Threads)
 find_package(Wavpack)
-if(WEBSOCKETS)
-  find_package(Websockets)
-else()
-  set(WEBSOCKETS_LIBRARIES)
-  set(WEBSOCKETS_INCLUDE_DIRS)
-endif()
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(DMG dmg)
@@ -351,23 +342,12 @@ show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Wavpack" WAVPACK)
 show_dependency_status("Zlib" ZLIB)
-if(WEBSOCKETS)
-  show_dependency_status("Websockets" WEBSOCKETS)
-endif()
 
 if(CLIENT AND NOT(CURL_FOUND))
   message(SEND_ERROR "You must install Curl to compile DDNet")
 endif()
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile DDNet")
-endif()
-
-if(MYSQL AND NOT(MYSQL_FOUND))
-  message(SEND_ERROR "You must install MySQL to compile the DDNet server with MySQL support")
-endif()
-
-if(WEBSOCKETS AND NOT(WEBSOCKETS_FOUND))
-  message(SEND_ERROR "You must install libwebsockets to compile the DDNet server with websocket support")
 endif()
 
 if(CLIENT AND NOT(FREETYPE_FOUND))
@@ -532,8 +512,6 @@ generate_source("src/game/generated/client_data.cpp" "client_content_source")
 generate_source("src/game/generated/client_data.h" "client_content_header")
 generate_source("src/game/generated/protocol.cpp" "network_source")
 generate_source("src/game/generated/protocol.h" "network_header")
-generate_source("src/game/generated/server_data.cpp" "server_content_source")
-generate_source("src/game/generated/server_data.h" "server_content_header")
 
 
 ########################################################################
@@ -649,8 +627,6 @@ set_glob(ENGINE_SHARED GLOB src/engine/shared
   teehistorian_ex_chunks.h
   uuid_manager.cpp
   uuid_manager.h
-  websockets.cpp
-  websockets.h
 )
 set_glob(GAME_SHARED GLOB src/game
   collision.cpp
@@ -704,7 +680,6 @@ set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
 # Libraries
 set(LIBS
   ${CRYPTO_LIBRARIES}
-  ${WEBSOCKETS_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${PLATFORM_LIBS}
   # Add pthreads (on non-Windows) at the end, so that other libraries can depend
@@ -888,112 +863,6 @@ if(CLIENT)
   list(APPEND TARGETS_LINK ${TARGET_CLIENT})
 endif()
 
-
-########################################################################
-# SERVER
-########################################################################
-
-# Sources
-set_glob(ENGINE_SERVER GLOB src/engine/server
-  authmanager.cpp
-  authmanager.h
-  name_ban.cpp
-  name_ban.h
-  register.cpp
-  register.h
-  server.cpp
-  server.h
-  sql_connector.cpp
-  sql_connector.h
-  sql_server.cpp
-  sql_server.h
-  sql_string_helpers.cpp
-  sql_string_helpers.h
-)
-set_glob(GAME_SERVER GLOB_RECURSE src/game/server
-  ddracechat.cpp
-  ddracechat.h
-  ddracecommands.cpp
-  entities/character.cpp
-  entities/character.h
-  entities/door.cpp
-  entities/door.h
-  entities/dragger.cpp
-  entities/dragger.h
-  entities/flag.cpp
-  entities/flag.h
-  entities/gun.cpp
-  entities/gun.h
-  entities/laser.cpp
-  entities/laser.h
-  entities/light.cpp
-  entities/light.h
-  entities/pickup.cpp
-  entities/pickup.h
-  entities/plasma.cpp
-  entities/plasma.h
-  entities/projectile.cpp
-  entities/projectile.h
-  entity.cpp
-  entity.h
-  eventhandler.cpp
-  eventhandler.h
-  gamecontext.cpp
-  gamecontext.h
-  gamecontroller.cpp
-  gamecontroller.h
-  gamemodes/DDRace.cpp
-  gamemodes/DDRace.h
-  gamemodes/gamemode.h
-  gameworld.cpp
-  gameworld.h
-  player.cpp
-  player.h
-  save.cpp
-  save.h
-  score.h
-  score/file_score.cpp
-  score/file_score.h
-  score/sql_score.cpp
-  score/sql_score.h
-  teams.cpp
-  teams.h
-  teehistorian.cpp
-  teehistorian.h
-)
-set(GAME_GENERATED_SERVER
-  "src/game/generated/server_data.cpp"
-  "src/game/generated/server_data.h"
-)
-set(SERVER_SRC ${ENGINE_SERVER} ${GAME_SERVER} ${GAME_GENERATED_SERVER})
-if(TARGET_OS STREQUAL "windows")
-  set(SERVER_ICON "other/icons/DDNet-Server.rc")
-else()
-  set(SERVER_ICON)
-endif()
-
-# Libraries
-set(LIBS_SERVER
-  ${LIBS}
-  ${MYSQL_LIBRARIES}
-  # Add pthreads (on non-Windows) at the end, so that other libraries can depend
-  # on it.
-  ${CMAKE_THREAD_LIBS_INIT}
-)
-
-# Target
-set(TARGET_SERVER ${SERVER_EXECUTABLE})
-add_executable(${TARGET_SERVER}
-  ${DEPS}
-  ${SERVER_SRC}
-  ${SERVER_ICON}
-  $<TARGET_OBJECTS:engine-shared>
-  $<TARGET_OBJECTS:game-shared>
-)
-target_link_libraries(${TARGET_SERVER} ${LIBS_SERVER})
-list(APPEND TARGETS_OWN ${TARGET_SERVER})
-list(APPEND TARGETS_LINK ${TARGET_SERVER})
-
 ########################################################################
 # VARIOUS TARGETS
 ########################################################################
@@ -1038,17 +907,10 @@ if(GTEST_FOUND OR DOWNLOAD_GTEST)
     thread.cpp
     unix.cpp
   )
-  set(TESTS_EXTRA
-    src/engine/server/name_ban.cpp
-    src/engine/server/name_ban.h
-    src/game/server/teehistorian.cpp
-    src/game/server/teehistorian.h
-  )
 
   set(TARGET_TESTRUNNER testrunner)
   add_executable(${TARGET_TESTRUNNER} EXCLUDE_FROM_ALL
     ${TESTS}
-    ${TESTS_EXTRA}
     $<TARGET_OBJECTS:engine-shared>
     $<TARGET_OBJECTS:game-shared>
     ${DEPS}
@@ -1216,13 +1078,11 @@ set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME ${PROJECT_NAME})
 
 set(CPACK_TARGETS
   ${TARGET_CLIENT}
-  ${TARGET_SERVER}
 )
 set(CPACK_DIRS data)
 set(CPACK_FILES
   license.txt
   storage.cfg
-  autoexec_server.cfg
   ${COPY_FILES}
 )
 if(TARGET_OS STREQUAL "windows")
@@ -1232,7 +1092,6 @@ endif()
 if(NOT DEV)
   install(DIRECTORY data DESTINATION share/ddnet COMPONENT data)
   install(TARGETS ${TARGET_CLIENT} DESTINATION bin COMPONENT client)
-  install(TARGETS ${TARGET_SERVER} DESTINATION bin COMPONENT server)
 endif()
 
 if(DEV)
@@ -1250,9 +1109,7 @@ set(PACKAGE_TARGETS)
 
 if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
   file(MAKE_DIRECTORY bundle/client/)
-  file(MAKE_DIRECTORY bundle/server/)
   configure_file(other/bundle/client/Info.plist.in bundle/client/Info.plist)
-  configure_file(other/bundle/server/Info.plist.in bundle/server/Info.plist)
 
   if(HDIUTIL)
     set(DMG_PARAMS --hdiutil ${HDIUTIL})
@@ -1266,12 +1123,6 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
     ${TARGET_CLIENT}.app/Contents/Frameworks
     ${TARGET_CLIENT}.app/Contents/MacOS
     ${TARGET_CLIENT}.app/Contents/Resources
-    ${TARGET_SERVER}.app
-    ${TARGET_SERVER}.app/Contents
-    ${TARGET_SERVER}.app/Contents/MacOS
-    ${TARGET_SERVER}.app/Contents/Resources
-    ${TARGET_SERVER}.app/Contents/Resources/data
-    ${TARGET_SERVER}.app/Contents/Resources/data/mapres
   )
   set(DMG_MKDIR_COMMANDS)
   foreach(dir ${DMG_MKDIRS})
@@ -1420,14 +1271,6 @@ foreach(target ${TARGETS_OWN})
   if(CRYPTO_FOUND)
     target_compile_definitions(${target} PRIVATE CONF_OPENSSL)
     target_include_directories(${target} PRIVATE ${CRYPTO_INCLUDE_DIRS})
-  endif()
-  if(WEBSOCKETS)
-    target_compile_definitions(${target} PRIVATE CONF_WEBSOCKETS)
-    target_include_directories(${target} PRIVATE ${WEBSOCKETS_INCLUDE_DIRS})
-  endif()
-  if(MYSQL)
-    target_compile_definitions(${target} PRIVATE CONF_SQL)
-    target_include_directories(${target} PRIVATE ${MYSQL_INCLUDE_DIRS})
   endif()
   if(AUTOUPDATE)
     target_compile_definitions(${target} PRIVATE CONF_AUTOUPDATE)
