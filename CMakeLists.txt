@@ -286,10 +286,8 @@ if(MYSQL)
 else()
   set(MYSQL_LIBRARIES)
 endif()
-find_package(Pnglite)
 find_package(PythonInterp)
 find_package(Threads)
-find_package(Wavpack)
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(DMG dmg)
@@ -338,9 +336,7 @@ if(MYSQL)
   show_dependency_status("MySQL" MYSQL)
 endif()
 show_dependency_status("OpenSSL Crypto" CRYPTO)
-show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
-show_dependency_status("Wavpack" WAVPACK)
 show_dependency_status("Zlib" ZLIB)
 
 if(CLIENT AND NOT(CURL_FOUND))
@@ -795,15 +791,13 @@ if(CLIENT)
   )
   set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_GENERATED_CLIENT})
 
-  set(DEPS_CLIENT ${DEPS} ${PNGLITE_DEP} ${WAVPACK_DEP})
+  set(DEPS_CLIENT ${DEPS})
 
   # Libraries
   set(LIBS_CLIENT
     ${LIBS}
     ${CURL_LIBRARIES}
     ${FREETYPE_LIBRARIES}
-    ${PNGLITE_LIBRARIES}
-    ${WAVPACK_LIBRARIES}
 
     ${PLATFORM_CLIENT_LIBS}
 
@@ -839,25 +833,10 @@ if(CLIENT)
   target_include_directories(${TARGET_CLIENT} PRIVATE
     ${CURL_INCLUDE_DIRS}
     ${FREETYPE_INCLUDE_DIRS}
-    ${PNGLITE_INCLUDE_DIRS}
-    ${WAVPACK_INCLUDE_DIRS}
   )
 
-  set(PARAMS "${WAVPACK_INCLUDE_DIRS};${WAVPACK_INCLUDE_DIRS}")
-  if(NOT(WAVPACK_OPEN_FILE_INPUT_EX_PARAMS STREQUAL PARAMS))
-    unset(WAVPACK_OPEN_FILE_INPUT_EX CACHE)
-  endif()
-  set(WAVPACK_OPEN_FILE_INPUT_EX_PARAMS "${PARAMS}" CACHE INTERNAL "")
-
-  set(CMAKE_REQUIRED_INCLUDES ${ORIGINAL_CMAKE_REQUIRED_INCLUDES} ${WAVPACK_INCLUDE_DIRS})
-  set(CMAKE_REQUIRED_LIBRARIES ${ORIGINAL_CMAKE_REQUIRED_LIBRARIES} ${WAVPACK_LIBRARIES})
-  check_symbol_exists(WavpackOpenFileInputEx wavpack.h WAVPACK_OPEN_FILE_INPUT_EX)
   set(CMAKE_REQUIRED_INCLUDES ${ORIGINAL_CMAKE_REQUIRED_INCLUDES})
   set(CMAKE_REQUIRED_LIBRARIES ${ORIGINAL_CMAKE_REQUIRED_LIBRARIES})
-
-  if(WAVPACK_OPEN_FILE_INPUT_EX)
-    target_compile_definitions(${TARGET_CLIENT} PRIVATE CONF_WAVPACK_OPEN_FILE_INPUT_EX)
-  endif()
 
   list(APPEND TARGETS_OWN ${TARGET_CLIENT})
   list(APPEND TARGETS_LINK ${TARGET_CLIENT})
