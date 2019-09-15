@@ -33,6 +33,24 @@ The client sends a chat message every x seconds which has a 50% chance to be one
 ./chillerbot-ng "cl_chiller_inp 0;connect localhost:8303;cl_pentest 1"
 ```
 
+Penetration testing can also be automated. Only on linux tho. Dependencys are nohup,bash and vi.
+Use the ``./start_pentest.sh`` and ``./stop_pentest.sh`` script to automatically start a bunch of bots and attack a specified port (defualt 8303).
+
+Examples:
+
+```
+# start 5 pentest bots and attack default port 8303
+# using the default chatfile pentest.txt
+./start_pentest.sh 5
+
+# start 22 pentest bots on port 8306
+# using a custom chatfile foo.txt
+./start_pentest.sh 22 8306 foo.txt
+
+# stop all started pentest bots on all ports
+./stop_pentest.sh
+```
+
 ### Interactive mode keybindings
 - 'A' walk left
 - 'D' walk right
