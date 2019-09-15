@@ -3172,6 +3172,8 @@ void CClient::DemoRecorder_Start(const char *pFilename, bool WithTimestamp, int 
 
 void CClient::DemoRecorder_HandleAutoStart()
 {
+	dbg_msg("auto_demo", "chillerbot-ng does not support demo recording");
+	/*
 	if(g_Config.m_ClAutoDemoRecord)
 	{
 		DemoRecorder_Stop(RECORDER_AUTO);
@@ -3182,9 +3184,10 @@ void CClient::DemoRecorder_HandleAutoStart()
 		{
 			// clean up auto recorded demos
 			CFileCollection AutoDemos;
-			AutoDemos.Init(Storage(), "demos/auto", "" /* empty for wild card */, ".demo", g_Config.m_ClAutoDemoMax);
+			AutoDemos.Init(Storage(), "demos/auto", "" / * empty for wild card * /, ".demo", g_Config.m_ClAutoDemoMax);
 		}
 	}
+	*/
 }
 
 void CClient::DemoRecorder_Stop(int Recorder)
