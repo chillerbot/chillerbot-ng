@@ -12,6 +12,8 @@
 
 #include <game/teamscore.h>
 
+#include <cstdio>
+
 #define MIN3(x,y,z)  ((y) <= (z) ? \
 	((x) <= (y) ? (x) : (y)) \
 	: \

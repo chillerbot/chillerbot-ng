@@ -4,6 +4,7 @@
 #define GAME_CLIENT_COMPONENTS_MAPLAYERS_H
 #include <game/client/component.h>
 
+#include <cstdint>
 #include <vector>
 
 
