@@ -636,15 +636,7 @@ void CClient::Connect(const char *pAddress, const char *pPassword)
 		net_host_lookup("localhost", &m_ServerAddress, m_NetClient[0].NetType());
 	}
 
-	if(m_SendPassword)
-	{
-		str_copy(m_Password, g_Config.m_Password, sizeof(m_Password));
-		m_SendPassword = false;
-	}
-	else if(!pPassword)
-		m_Password[0] = 0;
-	else
-		str_copy(m_Password, pPassword, sizeof(m_Password));
+	str_copy(m_Password, g_Config.m_Password, sizeof(m_Password));
 
 	m_RconAuthed[0] = 0;
 	if(m_ServerAddress.port == 0)
