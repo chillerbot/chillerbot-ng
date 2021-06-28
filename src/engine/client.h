@@ -14,6 +14,8 @@ enum
 	RECORDER_AUTO=1,
 	RECORDER_RACE=2,
 	RECORDER_MAX=3,
+
+	NUM_DUMMIES = 2,
 };
 
 typedef bool (*CLIENTFUNC_FILTER)(const void *pData, int DataSize, void *pUser);

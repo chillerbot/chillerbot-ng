@@ -724,6 +724,16 @@ if(CLIENT)
     components/camera.h
     components/chat.cpp
     components/chat.h
+    components/chillerbot/chatcommands.h
+    components/chillerbot/chathelper.cpp
+    components/chillerbot/chathelper.h
+    components/chillerbot/chillerbotux.cpp
+    components/chillerbot/chillerbotux.h
+    components/chillerbot/chillpw.cpp
+    components/chillerbot/chillpw.h
+    components/chillerbot/remotecontrol.cpp
+    components/chillerbot/remotecontrol.h
+    components/chillerbot/version.h
     components/console.cpp
     components/console.h
     components/controls.cpp

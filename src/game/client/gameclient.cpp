@@ -55,6 +55,11 @@
 #include "components/statboard.h"
 #include "components/voting.h"
 
+#include "components/chillerbot/chathelper.h"
+#include "components/chillerbot/chillerbotux.h"
+#include "components/chillerbot/chillpw.h"
+#include "components/chillerbot/remotecontrol.h"
+
 #include <base/system.h>
 #include "components/race_demo.h"
 #include "components/ghost.h"
@@ -105,6 +110,12 @@ static CBackground gs_BackGround;
 static CRaceDemo gs_RaceDemo;
 static CGhost gs_Ghost;
 
+
+static CChillerBotUX gs_ChillerBotUX;
+static CChatHelper gs_ChatHelper;
+static CChillPw gs_ChillPw;
+static CRemoteControl gs_RemoteControl;
+
 CGameClient::CStack::CStack() { m_Num = 0; }
 void CGameClient::CStack::Add(class CComponent *pComponent) { m_paComponents[m_Num++] = pComponent; }
 
@@ -154,6 +165,9 @@ void CGameClient::OnConsoleInit()
 	m_pRaceDemo = &::gs_RaceDemo;
 	m_pGhost = &::gs_Ghost;
 
+	m_pChillerBotUX = &::gs_ChillerBotUX;
+	m_pChatHelper = &::gs_ChatHelper;
+
 	gs_NamePlates.SetPlayers(m_pPlayers);
 
 	// make a list of all the systems, make sure to add them in the correct render order
@@ -167,6 +181,11 @@ void CGameClient::OnConsoleInit()
 	m_All.Add(m_pVoting);
 	m_All.Add(m_pParticles); // doesn't render anything, just updates all the particles
 	m_All.Add(m_pRaceDemo);
+
+	m_All.Add(m_pChillerBotUX);
+	m_All.Add(m_pChatHelper);
+	m_All.Add(&gs_ChillPw);
+	m_All.Add(&gs_RemoteControl);
 
 	m_All.Add(&gs_BackGround);	//render instead of gs_MapLayersBackGround when g_Config.m_ClOverlayEntities == 100
 	m_All.Add(&gs_MapLayersBackGround); // first to render
