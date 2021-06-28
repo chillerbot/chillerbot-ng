@@ -35,7 +35,8 @@ CDemoRecorder::CDemoRecorder(class CSnapshotDelta *pSnapshotDelta, bool NoMapDat
 // Record
 int CDemoRecorder::Start(class IStorage *pStorage, class IConsole *pConsole, const char *pFilename, const char *pNetVersion, const char *pMap, SHA256_DIGEST Sha256, unsigned Crc, const char *pType, unsigned int MapSize, unsigned char *pMapData, IOHANDLE MapFile, DEMOFUNC_FILTER pfnFilter, void *pUser)
 {
-	m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "demo_recorder", "chillerbot-ng does not support demo recording");
+	if(m_pConsole)
+		m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "demo_recorder", "chillerbot-ng does not support demo recording");
 	return -1;
 	/*
 
