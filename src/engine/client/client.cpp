@@ -73,6 +73,19 @@
 #undef main
 #endif
 
+#include "signal.h"
+#include "stdio.h"
+#include "stdlib.h"
+
+static class CClient *spClient;
+
+static void OnCrash(int sig)
+{
+	printf("[stats] caught signal=%d saving stats...\n", sig);
+	spClient->Disconnect();
+	exit(0); // TODO: should probably not exit with ok
+}
+
 void CGraph::Init(float Min, float Max)
 {
 	m_Min = Min;
@@ -3504,6 +3517,13 @@ int main(int argc, const char **argv) // ignore_convention
 
 	// run the client
 	dbg_msg("client", "starting...");
+
+	spClient = pClient;
+	signal(SIGINT, OnCrash);
+	signal(SIGILL, OnCrash);
+	signal(SIGFPE, OnCrash);
+	signal(SIGABRT, OnCrash);
+
 	pClient->Run();
 
 	// write down the config and quit
