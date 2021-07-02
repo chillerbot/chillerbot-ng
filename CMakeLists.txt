@@ -713,6 +713,7 @@ if(CLIENT)
   set_glob(GAME_CLIENT GLOB_RECURSE src/game/client
     animstate.cpp
     animstate.h
+    chillerbot-ng_gameclient.h
     component.h
     components/background.cpp
     components/background.h
