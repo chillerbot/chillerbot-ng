@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y mingw-w64 \
         libpnglite-dev \
         libwavpack-dev \
         libopusfile-dev \
-        libsdl2-dev
+        libsdl2-dev \
+        apt-transport-https \
+        ca-certificates
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
         update-alternatives --install /usr/bin/python python /usr/bin/python3 2
