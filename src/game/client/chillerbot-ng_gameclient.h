@@ -148,10 +148,14 @@ void CGameClient::PenetrateServer()
 		}
 	}
 
-	// kill and reconnect
+
+
+	// kill and reconnect and vote
 	int r = rand() % 50;
 	if (r == 2)
 		SendKill(-1);
+	if (r > 3 && r < 6)
+		m_pVoting->Vote(rand() % 2 ? -1 : 1);
 	if (r == 1)
 		m_pClient->Connect(g_Config.m_DbgStressServer);
 }
